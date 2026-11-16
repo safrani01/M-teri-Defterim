@@ -104,6 +104,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);border-colo
 .evr small{display:block;color:var(--mut)}
 .calhd{display:flex;align-items:center;justify-content:space-between;gap:8px}.calhd b{font-size:17px;text-transform:capitalize}
 .calhd button{width:44px;background:var(--soft);color:var(--pri);border:0;border-radius:10px;padding:8px;font-size:18px;cursor:pointer}
+.az{display:flex;gap:4px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
+.az button{flex:none;min-width:34px;height:34px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;padding:0 6px}
+.az button.on{background:var(--pri);color:var(--onpri);border-color:var(--pri)}
+.az button:disabled{opacity:.3;cursor:default}
 .banner{background:#fef3c7;color:#78350f;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .empty{text-align:center;color:var(--mut);padding:40px 10px}
 </style>
@@ -167,7 +171,7 @@ applyTheme();
 const STATUS=['Yeni','Görüşüldü','Teklif verildi','Sözleşme yapıldı','Beklemede','Kayıp'];
 const blankC=()=>({id:uid(),createdAt:Date.now(),updatedAt:Date.now(),anrede:'',vorname:'',nachname:'',isFirma:false,firma:'',position:'',ustid:'',steuernr:'',hrb:'',geburtsdatum:'',strasse:'',plz:'',ort:'',liefDiff:false,lief:{strasse:'',plz:'',ort:''},rechDiff:false,rech:{strasse:'',plz:'',ort:''},iban:'',kontoinhaber:'',telefon:'',handy:'',email:'',status:'Yeni',wiedervorlage:'',vollmacht:false,meters:[],notes:[],docs:[],abr:[],briefe:[]});
 const blankM=typ=>({id:uid(),typ,zaehlernr:'',malo:'',anbieter:'',kundennr:'',tarif:'',verbrauch:'',start:'',ende:'',frist:'',readings:[],notiz:''});
-const S={customers:[],trash:[],events:[],calY:0,calM:0,calSel:'',q:'',filter:'all',status:'',sort:(()=>{try{return localStorage.getItem('em_sort')||'name'}catch(e){return 'name'}})(),view:'list',cur:null,draft:null,dirty:false,urls:[],ocrStart:false};
+const S={customers:[],trash:[],events:[],letter:'',calY:0,calM:0,calSel:'',q:'',filter:'all',status:'',sort:(()=>{try{return localStorage.getItem('em_sort')||'name'}catch(e){return 'name'}})(),view:'list',cur:null,draft:null,dirty:false,urls:[],ocrStart:false};
 const getC=id=>S.customers.find(c=>c.id===id);
 async function loadAll(){const all=await DB.all('customers');S.events=all.filter(c=>c.kind==='event');const cs=all.filter(c=>c.kind!=='event');S.customers=cs.filter(c=>!c.deletedAt);S.trash=cs.filter(c=>c.deletedAt).sort((a,b)=>b.deletedAt-a.deletedAt);}
 function actionDate(m){if(!m.ende)return null;return m.frist?addDays(m.ende,-Math.abs(+m.frist||0)):m.ende;}
@@ -195,6 +199,7 @@ function badgeDeadline(c){const d=deadline(c);if(!d)return '';
  if(d.days<0)return `<span class="tag">⌛ ${d.kind==='Fesih'?T('Fesih'):T('Bitti')} ${fmtDate(d.date)}</span>`;
  return `<span class="tag ${d.days<=30?'red':d.days<=90?'amb':''}">⏰ ${T(d.kind)} ${fmtDate(d.date)} · ${d.days} ${T('g')}</span>`;}
 
+const letterOf=c=>{const n=(nameOf(c)||'').trim();if(!n)return'#';const ch=(n[0].toLocaleUpperCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g,'')[0])||'#';return /[A-Z]/.test(ch)?ch:'#';};
 function renderList(){
  let list=S.customers.slice();
  const q=S.q.trim().toLowerCase();
@@ -202,6 +207,8 @@ function renderList(){
  if(S.filter==='ending')list=list.filter(endingSoon);
  if(S.filter==='follow')list=list.filter(needsFollow);
  if(S.status)list=list.filter(c=>c.status===S.status);
+ const have=new Set(S.customers.map(letterOf));if(S.letter&&!have.has(S.letter))S.letter='';
+ if(S.letter)list=list.filter(c=>letterOf(c)===S.letter);
  if(S.sort==='name')list.sort((a,b)=>nameOf(a).localeCompare(nameOf(b),'de'));
  else if(S.sort==='end')list.sort((a,b)=>{const x=deadline(a),y=deadline(b);const fx=x&&x.days>=0?x.days:1e9,fy=y&&y.days>=0?y.days:1e9;return fx-fy;});
  else list.sort((a,b)=>b.updatedAt-a.updatedAt);
@@ -220,6 +227,7 @@ function renderList(){
   <select id="stSel" style="width:auto;padding:5px 8px;border-radius:20px;font-size:14px"><option value="">Durum: hepsi</option>${STATUS.map(s=>`<option ${S.status===s?'selected':''}>${s}</option>`).join('')}</select>
   <select id="sortSel" style="width:auto;padding:5px 8px;border-radius:20px;font-size:14px"><option value="upd" ${S.sort==='upd'?'selected':''}>Sıra: son işlem</option><option value="name" ${S.sort==='name'?'selected':''}>Sıra: A–Z</option><option value="end" ${S.sort==='end'?'selected':''}>Sıra: bitiş yakın</option></select>
  </div>
+<div class="az">${[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].concat(have.has('#')?['#']:[]).map(l=>`<button data-act="letter" data-l="${l}" class="${S.letter===l?'on':''}" ${have.has(l)?'':'disabled'}>${l}</button>`).join('')}</div>
  <div id="items">${list.length?list.map(itemHtml).join(''):`<div class="empty">${S.customers.length?T('Sonuç yok.'):T('Henüz müşteri yok.<br>Sağ alttaki <b>+</b> ile ekleyin veya 📷 ile belgeden okutun.')}</div>`}</div>
  </main>
  <div class="fab"><button class="a" data-act="newOcr" aria-label="Belgeden yeni müşteri">📷</button><button class="p" data-act="new" aria-label="Yeni müşteri">+</button></div>`;
@@ -939,6 +947,7 @@ document.addEventListener('click',async e=>{
   case 'settings':openSettings();break;
   case 'theme':openSheet('<h3>🎨 '+T('Uygulama rengi')+'</h3><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+Object.entries(THEMES).map(([k,v])=>`<button class="btn ${k===cfg.get('theme','teal')?'':'sec'}" data-act="setTheme" data-th="${k}"><span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:${v[1]};vertical-align:-3px;margin-right:6px"></span>${T(v[0])}${k===cfg.get('theme','teal')?' ✓':''}</button>`).join('')+'</div>');break;
   case 'setTheme':cfg.set('theme',t.dataset.th);applyTheme();openSettings();break;
+  case 'letter':S.letter=S.letter===t.dataset.l?'':t.dataset.l;renderList();break;
   case 'cal':openCal();break;
   case 'calPrev':S.calM--;if(S.calM<0){S.calM=11;S.calY--;}openCal();break;
   case 'calNext':S.calM++;if(S.calM>11){S.calM=0;S.calY++;}openCal();break;
