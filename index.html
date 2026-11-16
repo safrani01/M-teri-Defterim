@@ -456,7 +456,7 @@ async function exportJson(withImg){
  const data={app:'enerji-musteri',v:1,exported:new Date().toISOString(),customers:S.customers,images:imgs};
  download(`musteri-yedek-${todayISO()}.json`,new Blob([JSON.stringify(data)],{type:'application/json'}));cfg.set('lastBackup',Date.now());toast(T('Yedek indirildi'));
 }
-const CSV_H=['Anrede','Vorname','Nachname','Geburtsdatum','Straße','PLZ','Ort','Lieferadresse','Rechnungsadresse','Telefon','Handy','E-Mail','IBAN','Kontoinhaber','Status','Wiedervorlage','Vollmacht','Energieart','Zählernummer','Marktlokations-ID','Aktueller Anbieter','Kundennummer','Tarif','Jahresverbrauch kWh','Vertragsbeginn','Vertragsende','Kündigungsfrist Tage','Letzter Zählerstand','Datum Zählerstand','Notizen'];
+const CSV_H=['Anrede','Vorname','Nachname','Geburtsdatum','Straße','PLZ','Ort','Lieferadresse','Rechnungsadresse','Telefon','Handy','E-Mail','IBAN','Kontoinhaber','Status','Wiedervorlage','Vollmacht','Energieart','Zählernummer','Marktlokations-ID','Aktueller Anbieter','Kundennummer','Tarif','Jahresverbrauch kWh','Vertragsbeginn','Vertragsende','Kündigungsfrist Tage','Letzter Zählerstand','Datum Zählerstand','Zählernotiz','Notizen'];
 function exportCsv(){
  const H=CSV_H;
  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[H.map(q).join(';')];
@@ -464,12 +464,12 @@ function exportCsv(){
   const notes=c.notes.map(n=>new Date(n.ts).toLocaleDateString('de-DE')+': '+n.text).join(' | ');
   const ms=c.meters.length?c.meters:[null];
   ms.forEach(m=>{const r=m?m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum))[0]:null;
-   rows.push([...base,...(m?[m.typ,m.zaehlernr,m.malo,m.anbieter,m.kundennr,m.tarif,m.verbrauch,fmtDate(m.start),fmtDate(m.ende),m.frist,r?r.stand:'',r?fmtDate(r.datum):'']:Array(12).fill('')),notes].map(q).join(';'));});});
+   rows.push([...base,...(m?[m.typ,m.zaehlernr,m.malo,m.anbieter,m.kundennr,m.tarif,m.verbrauch,fmtDate(m.start),fmtDate(m.ende),m.frist,r?r.stand:'',r?fmtDate(r.datum):'',m.notiz||'']:Array(13).fill('')),notes].map(q).join(';'));});});
  download(`musteriler-${todayISO()}.csv`,new Blob(['﻿'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));toast(T('CSV indirildi'));
 }
 
 /* ---------- CSV içe aktarma ---------- */
-const CSVMAP={anrede:['anrede','hitap'],vorname:['vorname','ad','isim','firstname'],nachname:['nachname','soyad','soyisim','lastname'],geburtsdatum:['geburtsdatum','doğumtarihi','birthdate'],strasse:['straße','strasse','adres','adresse','street'],plz:['plz','postleitzahl','zip'],ort:['ort','stadt','şehir','city'],lief:['lieferadresse'],rech:['rechnungsadresse'],telefon:['telefon','tel','phone'],handy:['handy','mobil','cep','cepno','mobile'],email:['email','emailadresse','mail','eposta'],iban:['iban'],kontoinhaber:['kontoinhaber'],status:['status','durum'],wiedervorlage:['wiedervorlage','takip'],vollmacht:['vollmacht'],typ:['energieart','typ','art','tür'],zaehlernr:['zählernummer','zaehlernummer','zählernr','sayaçno'],malo:['marktlokationsid','malo','maloid','marktlokation'],anbieter:['aktuelleranbieter','anbieter','firma','mevcutfirma'],kundennr:['kundennummer','kundennr','müşterinumarası'],tarif:['tarif'],verbrauch:['jahresverbrauchkwh','jahresverbrauch','verbrauch'],start:['vertragsbeginn','beginn'],ende:['vertragsende','ende'],frist:['kündigungsfristtage','kündigungsfrist'],stand:['letzterzählerstand','zählerstand'],standDatum:['datumzählerstand','zählerstanddatum'],notizen:['notizen','notiz','not','notlar']};
+const CSVMAP={anrede:['anrede','hitap'],vorname:['vorname','ad','isim','firstname'],nachname:['nachname','soyad','soyisim','lastname'],geburtsdatum:['geburtsdatum','doğumtarihi','birthdate'],strasse:['straße','strasse','adres','adresse','street'],plz:['plz','postleitzahl','zip'],ort:['ort','stadt','şehir','city'],lief:['lieferadresse'],rech:['rechnungsadresse'],telefon:['telefon','tel','phone'],handy:['handy','mobil','cep','cepno','mobile'],email:['email','emailadresse','mail','eposta'],iban:['iban'],kontoinhaber:['kontoinhaber'],status:['status','durum'],wiedervorlage:['wiedervorlage','takip'],vollmacht:['vollmacht'],typ:['energieart','typ','art','tür'],zaehlernr:['zählernummer','zaehlernummer','zählernr','sayaçno'],malo:['marktlokationsid','malo','maloid','marktlokation'],anbieter:['aktuelleranbieter','anbieter','firma','mevcutfirma'],kundennr:['kundennummer','kundennr','müşterinumarası'],tarif:['tarif'],verbrauch:['jahresverbrauchkwh','jahresverbrauch','verbrauch'],start:['vertragsbeginn','beginn'],ende:['vertragsende','ende'],frist:['kündigungsfristtage','kündigungsfrist'],stand:['letzterzählerstand','zählerstand'],standDatum:['datumzählerstand','zählerstanddatum'],mnotiz:['zählernotiz','zaehlernotiz','sayaçnotu','zählernotizen'],notizen:['notizen','notiz','not','notlar']};
 const csvNorm=h=>String(h||'').toLowerCase().replace(/[^a-zäöüßçğışé0-9]/g,'');
 const csvDate=v=>{v=(v||'').trim();let m;if(m=v.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{2,4})/))return toISO(m[1],m[2],m[3]);if(m=v.match(/^(\d{4})-(\d{2})-(\d{2})/))return m[0];return '';};
 function parseCSV(text){
@@ -506,9 +506,9 @@ async function importCsv(f){
     if(g(r,'rech')){c.rechDiff=true;c.rech=splitAddr(g(r,'rech'));}
     if(g(r,'notizen'))c.notes.push({id:uid(),ts:Date.now(),text:g(r,'notizen')});
     map.set(key,c);}
-   const mk=['zaehlernr','malo','anbieter','kundennr','tarif','verbrauch','start','ende','stand'];
+   const mk=['zaehlernr','malo','anbieter','kundennr','tarif','verbrauch','start','ende','stand','mnotiz'];
    if(mk.some(k=>g(r,k))){const m=blankM(/gas/i.test(g(r,'typ'))?'Gas':'Strom');
-    Object.assign(m,{zaehlernr:g(r,'zaehlernr'),malo:g(r,'malo').replace(/\s/g,''),anbieter:g(r,'anbieter'),kundennr:g(r,'kundennr'),tarif:g(r,'tarif'),verbrauch:g(r,'verbrauch').replace(/\.(?=\d{3}\b)/g,'').replace(',','.'),start:csvDate(g(r,'start')),ende:csvDate(g(r,'ende')),frist:g(r,'frist')});
+    Object.assign(m,{zaehlernr:g(r,'zaehlernr'),malo:g(r,'malo').replace(/\s/g,''),anbieter:g(r,'anbieter'),kundennr:g(r,'kundennr'),tarif:g(r,'tarif'),verbrauch:g(r,'verbrauch').replace(/\.(?=\d{3}\b)/g,'').replace(',','.'),start:csvDate(g(r,'start')),ende:csvDate(g(r,'ende')),frist:g(r,'frist'),notiz:g(r,'mnotiz')});
     if(g(r,'stand'))m.readings.push({id:uid(),datum:csvDate(g(r,'standDatum'))||todayISO(),stand:g(r,'stand')});
     c.meters.push(m);mc++;}
   }
@@ -521,7 +521,7 @@ async function importCsv(f){
 }
 function csvTemplate(){
  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
- const sample=['Herr','Max','Mustermann','05.03.1980','Hauptstraße 1','50667','Köln','','','0221 123456','0176 1234567','max@example.de','DE89 3704 0044 0532 0130 00','','Yeni','','nein','Strom','1EMH0012345','51234567890','E.ON','1234567','Basis','3500','01.01.2025','31.12.2026','42','12345','01.11.2026','Beispiel'];
+ const sample=['Herr','Max','Mustermann','05.03.1980','Hauptstraße 1','50667','Köln','','','0221 123456','0176 1234567','max@example.de','DE89 3704 0044 0532 0130 00','','Yeni','','nein','Strom','1EMH0012345','51234567890','E.ON','1234567','Basis','3500','01.01.2025','31.12.2026','42','12345','01.11.2026','','Beispiel'];
  download('musteri-sablon.csv',new Blob(['﻿'+CSV_H.map(q).join(';')+'\r\n'+sample.map(q).join(';')+'\r\n'],{type:'text/csv;charset=utf-8'}));toast(T('Şablon indirildi'));
 }
 function importJson(){pickFileAny('.json,application/json',async f=>{
