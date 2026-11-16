@@ -261,6 +261,7 @@ const addrF=(p)=>`<div class="subbox">${F('Straße + Hausnummer',p+'.strasse')}<
 function meterForm(m,i){
  const rd=m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum));
  return `<div class="mcard"><h4><span>${m.typ==='Strom'?'⚡ Strom sayacı':'🔥 Gas sayacı'} #${i+1}</span><button class="x" data-act="rmMeter" data-i="${i}" aria-label="Sayacı sil">🗑</button></h4>
+ <button class="btn sm sec" style="margin-bottom:10px" data-act="ocrMeter" data-i="${i}">📷 Kamera / galeriden oku (sayaç, Zählerstand, fatura)</button>
  ${F('Zählernummer',`meters.${i}.zaehlernr`,{cap:'characters'})}
  ${F('Marktlokations-ID (11 haneli)',`meters.${i}.malo`,{im:'numeric',hint:1})}
  <div class="g2">${F('Mevcut firma',`meters.${i}.anbieter`)}${F('Kundennummer',`meters.${i}.kundennr`,{cap:'characters'})}</div>
@@ -282,7 +283,7 @@ function renderForm(){
  <div class="card"><h3>🏠 Adres</h3>${F('Straße + Hausnummer','strasse')}<div class="g3">${F('PLZ','plz',{im:'numeric'})}${F('Ort','ort')}</div>
   ${CK('Lieferadresse farklı','liefDiff')}${d.liefDiff?'<b class="mut">Lieferadresse</b>'+addrF('lief'):''}
   ${CK('Rechnungsadresse farklı','rechDiff')}${d.rechDiff?'<b class="mut">Rechnungsadresse</b>'+addrF('rech'):''}</div>
- <div class="card"><h3>🏦 Banka</h3>${F('IBAN','iban',{cap:'characters',hint:1,ph:'DE00 0000 0000 0000 0000 00'})}${F('Kontoinhaber (farklıysa)','kontoinhaber')}</div>
+ <div class="card"><h3>🏦 Banka</h3><button class="btn sm sec" style="margin-bottom:10px" data-act="ocrIban">📷 Kamera / galeriden oku (IBAN)</button>${F('IBAN','iban',{cap:'characters',hint:1,ph:'DE00 0000 0000 0000 0000 00'})}${F('Kontoinhaber (farklıysa)','kontoinhaber')}</div>
  <div class="card"><h3>📞 İletişim</h3><div class="g2">${F('Telefon','telefon',{type:'tel',im:'tel'})}${F('Handy','handy',{type:'tel',im:'tel'})}</div>${F('E-Mail','email',{type:'email',cap:'none'})}</div>
  <div class="card"><h3>🔌 Sayaçlar</h3>${d.meters.map(meterForm).join('')}
   <div class="g2"><button class="btn sec" data-act="addMeter" data-t="Strom">+ ⚡ Strom</button><button class="btn sec" data-act="addMeter" data-t="Gas">+ 🔥 Gas</button></div></div>
@@ -372,8 +373,10 @@ const CKEYS=['anrede','vorname','nachname','geburtsdatum','strasse','plz','ort',
 const MKEYS=['zaehlernr','malo','anbieter','kundennr','verbrauch','start','ende','stand'];
 const DATEK=['geburtsdatum','start','ende'];
 
-function openOcr(){
- openSheet(`<h3>📷 Belgeden / resimden oku</h3><p class="mut">Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)</p>
+function openOcr(scope){
+ S.ocrScope=scope||null;
+ const what=!scope?'Belge':scope.only==='iban'?'IBAN':'Sayaç';
+ openSheet(`<h3>📷 ${what} — kamera / galeriden oku</h3><p class="mut">Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)</p>
  <div class="g2"><button class="btn" id="oCam">📷 Kamera</button><button class="btn sec" id="oGal">🖼 Galeri</button></div><div id="oBody"></div>`);
  $('#oCam').onclick=()=>pickFile(true,runOcr);$('#oGal').onclick=()=>pickFile(false,runOcr);
 }
@@ -392,23 +395,25 @@ async function runOcr(file){
 function attachDraftImg(blob,name){const id=uid();S.draft._imgs[id]={blob,name:name||'belge.jpg'};S.draft.docs.push({id,name:name||'belge.jpg',ts:Date.now()});S.dirty=true;}
 function showOcrResult(text,blob,name){
  const f=parseText(text);const d=S.draft;
- const cKeys=CKEYS.filter(k=>f[k]),mKeys=MKEYS.filter(k=>f[k]);
+ const sc=S.ocrScope;
+ const cKeys=(sc&&sc.only==='meter')?[]:CKEYS.filter(k=>f[k]&&(!sc||sc.only!=='iban'||k==='iban'));
+ const mKeys=(sc&&sc.only==='iban')?[]:MKEYS.filter(k=>f[k]);
  const rows=[...cKeys,...mKeys].map(k=>{const isM=MKEYS.includes(k);const cur=isM?'':d[k];const clash=cur&&cur!==f[k];
   return `<div class="res"><input type="checkbox" data-k="${k}" ${clash?'':'checked'}><label class="fld" style="margin:0"><span>${LBL[k]}${clash?` · <i>mevcut: ${esc(cur)}</i>`:''}</span><input data-v="${k}" type="${DATEK.includes(k)?'date':'text'}" value="${esc(f[k])}"></label></div>`;}).join('');
  const types=['Strom','Gas'];const guess=f._typ||'Strom';
  const opts=d.meters.map((m,i)=>`<option value="m:${m.id}">${m.typ} #${i+1}${m.zaehlernr?' – '+esc(m.zaehlernr):''}</option>`).join('')+types.map(t=>`<option value="n:${t}">+ Yeni ${t} sayacı</option>`).join('');
  const def=d.meters.find(m=>m.typ===guess)?'m:'+d.meters.find(m=>m.typ===guess).id:'n:'+guess;
  openSheet(`<h3>Okunan bilgiler</h3>${rows||'<p class="mut">Otomatik tanınan alan bulunamadı. Aşağıdaki ham metinden kopyalayabilirsiniz.</p>'}
- ${mKeys.length?`<label class="fld"><span>Sayaç bilgileri şuraya yazılsın</span><select id="mTarget">${opts}</select></label>`:''}
+ ${mKeys.length&&!(sc&&sc.meterId)?`<label class="fld"><span>Sayaç bilgileri şuraya yazılsın</span><select id="mTarget">${opts}</select></label>`:''}
  <label class="chk"><input type="checkbox" id="atImg" checked>Resmi müşterinin belgelerine ekle</label>
  <details style="margin:8px 0"><summary class="mut">Ham metin</summary><textarea readonly style="min-height:160px">${esc(text)}</textarea></details>
  <div class="g2"><button class="btn sec" id="oX">İptal</button><button class="btn" id="oApply">Uygula</button></div>`);
- if(mKeys.length)$('#mTarget').value=def;
+ if($('#mTarget'))$('#mTarget').value=def;
  $('#oX').onclick=closeSheet;
  $('#oApply').onclick=()=>{
   let n=0;const val={};$$('#sheet [data-k]').forEach(c=>{if(c.checked)val[c.dataset.k]=$(`[data-v="${c.dataset.k}"]`,$('#sheet')).value.trim();});
   CKEYS.forEach(k=>{if(val[k]){d[k]=val[k];n++;}});
-  if(MKEYS.some(k=>val[k])){let m;const tv=$('#mTarget').value;if(tv.startsWith('n:')){m=blankM(tv.slice(2));d.meters.push(m);}else m=d.meters.find(x=>x.id===tv.slice(2));
+  if(MKEYS.some(k=>val[k])){let m;const tv=$('#mTarget')?$('#mTarget').value:'m:'+sc.meterId;if(tv.startsWith('n:')){m=blankM(tv.slice(2));d.meters.push(m);}else m=d.meters.find(x=>x.id===tv.slice(2));
    ['zaehlernr','malo','anbieter','kundennr','verbrauch','start','ende'].forEach(k=>{if(val[k]){m[k]=val[k];n++;}});
    if(val.stand){m.readings.push({id:uid(),datum:f.standDatum||todayISO(),stand:val.stand});n++;}}
   if(document.getElementById('atImg').checked)attachDraftImg(blob,name);
@@ -476,6 +481,8 @@ document.addEventListener('click',async e=>{
   case 'settings':openSettings();break;
   case 'closeSheet':closeSheet();break;
   case 'ocr':openOcr();break;
+  case 'ocrIban':openOcr({only:'iban'});break;
+  case 'ocrMeter':openOcr({only:'meter',meterId:S.draft.meters[+t.dataset.i].id});break;
   case 'save':saveForm();break;
   case 'addMeter':S.draft.meters.push(blankM(t.dataset.t));S.dirty=true;renderForm();break;
   case 'rmMeter':if(confirm('Bu sayaç silinsin mi?')){S.draft.meters.splice(+t.dataset.i,1);S.dirty=true;renderForm();}break;
