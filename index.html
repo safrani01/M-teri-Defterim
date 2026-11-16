@@ -144,7 +144,7 @@ const cfg={get:(k,d)=>{try{const v=localStorage.getItem('em_'+k);return v==null?
 const STATUS=['Yeni','Görüşüldü','Teklif verildi','Sözleşme yapıldı','Beklemede','Kayıp'];
 const blankC=()=>({id:uid(),createdAt:Date.now(),updatedAt:Date.now(),anrede:'',vorname:'',nachname:'',isFirma:false,firma:'',position:'',ustid:'',steuernr:'',hrb:'',geburtsdatum:'',strasse:'',plz:'',ort:'',liefDiff:false,lief:{strasse:'',plz:'',ort:''},rechDiff:false,rech:{strasse:'',plz:'',ort:''},iban:'',kontoinhaber:'',telefon:'',handy:'',email:'',status:'Yeni',wiedervorlage:'',vollmacht:false,meters:[],notes:[],docs:[]});
 const blankM=typ=>({id:uid(),typ,zaehlernr:'',malo:'',anbieter:'',kundennr:'',tarif:'',verbrauch:'',start:'',ende:'',frist:'',readings:[],notiz:''});
-const S={customers:[],q:'',filter:'all',status:'',sort:'upd',view:'list',cur:null,draft:null,dirty:false,urls:[],ocrStart:false};
+const S={customers:[],q:'',filter:'all',status:'',sort:(()=>{try{return localStorage.getItem('em_sort')||'name'}catch(e){return 'name'}})(),view:'list',cur:null,draft:null,dirty:false,urls:[],ocrStart:false};
 const getC=id=>S.customers.find(c=>c.id===id);
 function actionDate(m){if(!m.ende)return null;return m.frist?addDays(m.ende,-Math.abs(+m.frist||0)):m.ende;}
 function deadline(c){const l=c.meters.filter(m=>m.ende).map(m=>{const d=actionDate(m);return{m,date:d,days:dayNum(d),kind:m.frist?'Fesih':'Bitiş'};});if(!l.length)return null;const fut=l.filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);if(fut.length)return fut[0];return l.sort((a,b)=>b.days-a.days)[0];}
@@ -199,7 +199,7 @@ function renderList(){
  <div class="fab"><button class="a" data-act="newOcr" aria-label="Belgeden yeni müşteri">📷</button><button class="p" data-act="new" aria-label="Yeni müşteri">+</button></div>`;
  const qi=$('#q');qi.oninput=()=>{S.q=qi.value;const pos=qi.selectionStart;$('#items').innerHTML=''; renderList();const n=$('#q');n.focus();n.setSelectionRange(pos,pos);};
  $('#stSel').onchange=e=>{S.status=e.target.value;renderList();};
- $('#sortSel').onchange=e=>{S.sort=e.target.value;renderList();};
+ $('#sortSel').onchange=e=>{S.sort=e.target.value;try{localStorage.setItem('em_sort',S.sort)}catch(x){}renderList();};
 }
 function itemHtml(c){
  const ini=(c.firma?c.firma.slice(0,2):(c.vorname[0]||'')+(c.nachname[0]||'')).toUpperCase()||'?';
@@ -245,7 +245,7 @@ function renderDetail(){
   ${row('Telefon',cpb(c.telefon))}${row('Handy',cpb(c.handy))}${row('E-Mail',cpb(c.email))}</div>
  <div class="card"><h3>🔌 Sayaçlar</h3>${meters||'<p class="mut">Sayaç eklenmemiş. ✏️ Düzenle ile ekleyin.</p>'}</div>
  <div class="card"><h3>📝 Görüşme notları</h3><textarea id="newNote" placeholder="Yeni not…"></textarea><button class="btn sm" style="margin-top:8px" data-act="addNote">Not ekle</button>
-  ${c.notes.slice().sort((a,b)=>b.ts-a.ts).map(n=>`<div class="note"><small>${new Date(n.ts).toLocaleString(LOC[LANG],{dateStyle:'short',timeStyle:'short'})} <button class="x" data-act="delNote" data-nid="${n.id}">✕</button></small>${esc(n.text)}</div>`).join('')}</div>
+  ${c.notes.slice().sort((a,b)=>b.ts-a.ts).map(n=>`<div class="note"><small>📅 <b>${new Date(n.ts).toLocaleString(LOC[LANG],{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'})}</b> · ${new Date(n.ts).toLocaleTimeString(LOC[LANG],{hour:'2-digit',minute:'2-digit'})} <button class="x" data-act="delNote" data-nid="${n.id}">✕</button></small>${esc(n.text)}</div>`).join('')}</div>
  <div class="card"><h3>📎 Belgeler / fotoğraflar</h3><div class="row2" style="display:flex;gap:8px"><button class="btn sm sec" data-act="addDoc" data-cam="1">📷 Çek</button><button class="btn sm sec" data-act="addDoc">🖼 Galeri</button></div>
   <div class="docs">${c.docs.map(d=>`<img data-act="viewDoc" data-did="${d.id}" alt="${esc(d.name)}">`).join('')}</div></div>
  <div class="card"><button class="btn sec" data-act="summary" style="margin-bottom:8px">📋 Özeti kopyala</button><button class="btn red" data-act="del">🗑 Müşteriyi sil</button></div>
