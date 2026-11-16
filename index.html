@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Müşteriler">
+<title>Enerji Müşteri Defteri</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Cpath d='M36 8 18 36h12l-4 20 20-30H34z' fill='%23fbbf24'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f3f6f5;--card:#fff;--ink:#0f1f1c;--mut:#5b6b67;--line:#dce5e2;--pri:#0f766e;--onpri:#fff;--acc:#f59e0b;--red:#dc2626;--grn:#16a34a;--r:14px;--soft:#e8f3f1}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1514;--card:#16211f;--ink:#e8f1ee;--mut:#9fb3ae;--line:#263532;--pri:#2dd4bf;--onpri:#04201c;--soft:#1b2c29}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding-bottom:env(safe-area-inset-bottom)}
+header.top{position:sticky;top:0;z-index:20;background:var(--pri);color:var(--onpri);display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px}
+header.top h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.top button{background:transparent;border:0;color:inherit;font-size:22px;padding:4px 8px;cursor:pointer}
+.pad{padding:12px 12px 110px;max-width:760px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:16px}
+.btn{background:var(--pri);color:var(--onpri);border:0;border-radius:12px;padding:12px 16px;font-size:16px;font-weight:600;cursor:pointer;width:100%}
+.btn.sec{background:var(--soft);color:var(--pri)}
+.btn.red{background:var(--red);color:#fff}
+.btn.sm{width:auto;padding:8px 12px;font-size:14px}
+.btn.ocr{margin-bottom:12px;background:var(--acc);color:#1b1300}
+.fld{display:block;margin-bottom:10px}
+.fld>span{display:block;font-size:13px;color:var(--mut);margin-bottom:3px}
+input,select,textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);border-color:transparent}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.chk{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:15px}
+.chk input{width:22px;height:22px;flex:none}
+.subbox{border-left:3px solid var(--pri);padding-left:10px;margin:6px 0 12px}
+.hint{display:block;font-size:12px;margin-top:3px}
+.hint.ok{color:var(--grn)}.hint.bad{color:var(--red)}
+.mut{color:var(--mut);font-size:14px}
+.search{margin:2px 0 10px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:6px 12px;font-size:14px;cursor:pointer}
+.chip.on{background:var(--pri);color:var(--onpri);border-color:var(--pri)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;cursor:pointer}
+.stat b{display:block;font-size:22px}.stat span{font-size:12px;color:var(--mut)}
+.item{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:8px;cursor:pointer}
+.av{width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.mid{min-width:0;flex:1}.mid b{display:block}.sub{font-size:13px;color:var(--mut)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.tag.strom{background:#fef3c7;color:#78350f}.tag.gas{background:#dbeafe;color:#1e3a8a}
+.tag.red{background:#fee2e2;color:#991b1b}.tag.amb{background:#ffedd5;color:#9a3412}
+.fab{position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;z-index:15}
+.fab button{width:56px;height:56px;border-radius:50%;border:0;font-size:26px;box-shadow:0 4px 12px #0004;cursor:pointer}
+.fab .p{background:var(--pri);color:var(--onpri)}.fab .a{background:var(--acc);color:#1b1300}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.row:last-child{border:0}.row>span:first-child{color:var(--mut);flex:none}.row>span:last-child{text-align:right;word-break:break-word}
+.cp{background:none;border:0;color:var(--ink);font:inherit;text-align:right;cursor:pointer;padding:0}
+.cp:after{content:" ⧉";color:var(--pri);font-size:13px}
+.mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.3px}
+.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.acts a{background:var(--soft);color:var(--pri);text-align:center;border-radius:12px;padding:10px 4px;text-decoration:none;font-size:13px;font-weight:600}
+.acts a b{display:block;font-size:22px}
+.mcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.mcard h4{margin:0 0 6px;display:flex;justify-content:space-between;align-items:center}
+.note{background:var(--bg);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:15px;white-space:pre-wrap}
+.note small{display:block;color:var(--mut);margin-bottom:2px}
+.x{background:none;border:0;color:var(--red);font-size:18px;cursor:pointer;padding:2px 8px}
+.docs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.docs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line);cursor:pointer;background:var(--bg)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 2fr;gap:10px;z-index:15}
+#sheetBg{position:fixed;inset:0;background:#0007;z-index:50;display:none;align-items:flex-end;justify-content:center}
+#sheetBg.on{display:flex}
+#sheet{background:var(--card);width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+#sheet h3{margin:0 0 8px}
+.prog{height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin:12px 0 6px}
+.prog div{height:100%;width:0;background:var(--pri);transition:width .2s}
+.res{display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:start;margin-bottom:10px}
+.res input[type=checkbox]{width:22px;height:22px;margin-top:22px}
+#lock{position:fixed;inset:0;background:var(--pri);color:var(--onpri);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center}
+#lock.on{display:flex}#lock input{max-width:240px;text-align:center;font-size:24px;letter-spacing:8px}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
+#toast.on{opacity:1}
+.banner{background:#fef3c7;color:#78350f;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.empty{text-align:center;color:var(--mut);padding:40px 10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheetBg"><div id="sheet"></div></div>
+<div id="lock"><div style="font-size:48px">🔒</div><h2 style="margin:0">Müşteri Defteri</h2><input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"><button class="btn" style="max-width:240px;background:#fff;color:#0f766e" id="pinOk">Aç</button><div id="pinErr"></div></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ---------- yardımcılar ---------- */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const get=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const set=(o,p,v)=>{const k=p.split('.');let a=o;for(let i=0;i<k.length-1;i++)a=a[k[i]];a[k[k.length-1]]=v;};
+const fmtDate=i=>i?i.split('-').reverse().join('.'):'';
+const todayISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const dayNum=iso=>Math.round((new Date(iso+'T00:00:00')-new Date(todayISO()+'T00:00:00'))/864e5);
+const addDays=(iso,n)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const nameOf=c=>[c.vorname,c.nachname].filter(Boolean).join(' ')||'(isimsiz)';
+const addr=o=>[o.strasse,[o.plz,o.ort].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+const ibanClean=s=>String(s||'').replace(/\s+/g,'').toUpperCase();
+const ibanFmt=s=>ibanClean(s).replace(/(.{4})/g,'$1 ').trim();
+function ibanValid(s){const c=ibanClean(s);if(!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(c))return false;if(c.startsWith('DE')&&c.length!==22)return false;const r=c.slice(4)+c.slice(0,4);let m=0;for(const ch of r){if(ch>='0'&&ch<='9')m=(m*10+ +ch)%97;else m=(m*100+ch.charCodeAt(0)-55)%97;}return m===1;}
+const numDE=n=>{const v=parseFloat(String(n).replace(/\./g,'').replace(',','.'));return isNaN(v)?n:v.toLocaleString('de-DE');};
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200);}
+async function copy(t){try{await navigator.clipboard.writeText(t);}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();}toast('Kopyalandı');}
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
+const blobToDataURL=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b);});
+
+/* ---------- veri tabanı (IndexedDB) ---------- */
+const req=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+const DB={db:null,
+ async open(){this.db=await new Promise((res,rej)=>{const r=indexedDB.open('enerji-musteri',1);r.onupgradeneeded=()=>{r.result.createObjectStore('customers',{keyPath:'id'});r.result.createObjectStore('images',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});},
+ st(n,m='readonly'){return this.db.transaction(n,m).objectStore(n);},
+ all(n){return req(this.st(n).getAll());},
+ put(n,v){return req(this.st(n,'readwrite').put(v));},
+ get(n,k){return req(this.st(n).get(k));},
+ del(n,k){return req(this.st(n,'readwrite').delete(k));}
+};
+const cfg={get:(k,d)=>{try{const v=localStorage.getItem('em_'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set:(k,v)=>{try{localStorage.setItem('em_'+k,JSON.stringify(v));}catch(e){}}};
+
+/* ---------- model ---------- */
+const STATUS=['Yeni','Görüşüldü','Teklif verildi','Sözleşme yapıldı','Beklemede','Kayıp'];
+const blankC=()=>({id:uid(),createdAt:Date.now(),updatedAt:Date.now(),anrede:'',vorname:'',nachname:'',geburtsdatum:'',strasse:'',plz:'',ort:'',liefDiff:false,lief:{strasse:'',plz:'',ort:''},rechDiff:false,rech:{strasse:'',plz:'',ort:''},iban:'',kontoinhaber:'',telefon:'',handy:'',email:'',status:'Yeni',wiedervorlage:'',vollmacht:false,meters:[],notes:[],docs:[]});
+const blankM=typ=>({id:uid(),typ,zaehlernr:'',malo:'',anbieter:'',kundennr:'',tarif:'',verbrauch:'',start:'',ende:'',frist:'',readings:[],notiz:''});
+const S={customers:[],q:'',filter:'all',status:'',sort:'upd',view:'list',cur:null,draft:null,dirty:false,urls:[],ocrStart:false};
+const getC=id=>S.customers.find(c=>c.id===id);
+function actionDate(m){if(!m.ende)return null;return m.frist?addDays(m.ende,-Math.abs(+m.frist||0)):m.ende;}
+function deadline(c){const l=c.meters.filter(m=>m.ende).map(m=>{const d=actionDate(m);return{m,date:d,days:dayNum(d),kind:m.frist?'Fesih':'Bitiş'};});if(!l.length)return null;const fut=l.filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);if(fut.length)return fut[0];return l.sort((a,b)=>b.days-a.days)[0];}
+const needsFollow=c=>c.wiedervorlage&&dayNum(c.wiedervorlage)<=0&&!['Sözleşme yapıldı','Kayıp'].includes(c.status);
+const endingSoon=c=>{const d=deadline(c);return d&&d.days>=0&&d.days<=90;};
+function hay(c){return JSON.stringify([c.vorname,c.nachname,c.strasse,c.plz,c.ort,c.telefon,c.handy,c.email,c.iban,c.lief,c.rech,c.meters.map(m=>[m.zaehlernr,m.malo,m.anbieter,m.kundennr,m.tarif]),c.notes.map(n=>n.text)]).toLowerCase();}
+async function saveC(c){c.updatedAt=Date.now();await DB.put('customers',JSON.parse(JSON.stringify(c)));const i=S.customers.findIndex(x=>x.id===c.id);if(i<0)S.customers.push(c);else S.customers[i]=c;}
+
+/* ---------- navigasyon ---------- */
+function go(v,id){history.pushState({v,id},'');S.view=v;S.cur=id||null;render();scrollTo(0,0);}
+window.addEventListener('popstate',e=>{
+ if(S.view==='form'&&S.dirty&&!confirm('Kaydedilmemiş değişiklikler var. Yine de çıkılsın mı?')){history.pushState({v:'form'},'');return;}
+ S.dirty=false;const st=e.state||{v:'list'};S.view=st.v;S.cur=st.id||null;
+ if(S.view==='form'&&!S.draft){S.view='list';}
+ closeSheet();render();
+});
+function hdr(title,o={}){return `<header class="top">${o.back?'<button data-act="back" aria-label="Geri">←</button>':''}<h1>${esc(title)}</h1>${o.right||''}</header>`;}
+
+/* ---------- ana render ---------- */
+function render(){S.urls.forEach(u=>URL.revokeObjectURL(u));S.urls=[];
+ if(S.view==='detail')renderDetail();else if(S.view==='form')renderForm();else renderList();}
+
+function badgeDeadline(c){const d=deadline(c);if(!d)return '';
+ if(d.days<0)return `<span class="tag">⌛ ${d.kind==='Fesih'?'Fesih':'Bitti'} ${fmtDate(d.date)}</span>`;
+ return `<span class="tag ${d.days<=30?'red':d.days<=90?'amb':''}">⏰ ${d.kind} ${fmtDate(d.date)} · ${d.days} g</span>`;}
+
+function renderList(){
+ let list=S.customers.slice();
+ const q=S.q.trim().toLowerCase();
+ if(q)list=list.filter(c=>hay(c).includes(q));
+ if(S.filter==='ending')list=list.filter(endingSoon);
+ if(S.filter==='follow')list=list.filter(needsFollow);
+ if(S.status)list=list.filter(c=>c.status===S.status);
+ if(S.sort==='name')list.sort((a,b)=>nameOf(a).localeCompare(nameOf(b),'de'));
+ else if(S.sort==='end')list.sort((a,b)=>{const x=deadline(a),y=deadline(b);const fx=x&&x.days>=0?x.days:1e9,fy=y&&y.days>=0?y.days:1e9;return fx-fy;});
+ else list.sort((a,b)=>b.updatedAt-a.updatedAt);
+ const nEnd=S.customers.filter(endingSoon).length,nFol=S.customers.filter(needsFollow).length;
+ const lb=cfg.get('lastBackup',0);
+ const warn=S.customers.length&&(Date.now()-lb>14*864e5);
+ $('#app').innerHTML=`${hdr('⚡ Müşteri Defteri',{right:'<button data-act="settings" aria-label="Ayarlar">⚙️</button>'})}
+ <main class="pad">
+ ${warn?`<div class="banner"><span>💾 ${lb?'Son yedek: '+new Date(lb).toLocaleDateString('de-DE'):'Henüz yedek alınmadı.'} Veriler yalnız bu telefondadır.</span><button class="btn sm" data-act="settings">Yedek al</button></div>`:''}
+ <div class="stats"><div class="stat" data-act="filter" data-f="all"><b>${S.customers.length}</b><span>Müşteri</span></div><div class="stat" data-act="filter" data-f="ending"><b>${nEnd}</b><span>⏰ 90 gün içinde</span></div><div class="stat" data-act="filter" data-f="follow"><b>${nFol}</b><span>📅 Takip</span></div></div>
+ <input class="search" id="q" type="search" placeholder="🔍 İsim, ort, telefon, sayaç no, MaLo, IBAN…" value="${esc(S.q)}">
+ <div class="chips">
+  ${[['all','Tümü'],['ending','⏰ Yaklaşan'],['follow','📅 Takip']].map(([k,l])=>`<button class="chip ${S.filter===k?'on':''}" data-act="filter" data-f="${k}">${l}</button>`).join('')}
+  <select id="stSel" style="width:auto;padding:5px 8px;border-radius:20px;font-size:14px"><option value="">Durum: hepsi</option>${STATUS.map(s=>`<option ${S.status===s?'selected':''}>${s}</option>`).join('')}</select>
+  <select id="sortSel" style="width:auto;padding:5px 8px;border-radius:20px;font-size:14px"><option value="upd" ${S.sort==='upd'?'selected':''}>Sıra: son işlem</option><option value="name" ${S.sort==='name'?'selected':''}>Sıra: A–Z</option><option value="end" ${S.sort==='end'?'selected':''}>Sıra: bitiş yakın</option></select>
+ </div>
+ <div id="items">${list.length?list.map(itemHtml).join(''):`<div class="empty">${S.customers.length?'Sonuç yok.':'Henüz müşteri yok.<br>Sağ alttaki <b>+</b> ile ekleyin veya 📷 ile belgeden okutun.'}</div>`}</div>
+ </main>
+ <div class="fab"><button class="a" data-act="newOcr" aria-label="Belgeden yeni müşteri">📷</button><button class="p" data-act="new" aria-label="Yeni müşteri">+</button></div>`;
+ const qi=$('#q');qi.oninput=()=>{S.q=qi.value;const pos=qi.selectionStart;$('#items').innerHTML=''; renderList();const n=$('#q');n.focus();n.setSelectionRange(pos,pos);};
+ $('#stSel').onchange=e=>{S.status=e.target.value;renderList();};
+ $('#sortSel').onchange=e=>{S.sort=e.target.value;renderList();};
+}
+function itemHtml(c){
+ const ini=((c.vorname[0]||'')+(c.nachname[0]||'')).toUpperCase()||'?';
+ const ns=c.meters.filter(m=>m.typ==='Strom').length,ng=c.meters.filter(m=>m.typ==='Gas').length;
+ return `<div class="item" data-act="open" data-id="${c.id}"><div class="av">${esc(ini)}</div><div class="mid"><b>${esc(nameOf(c))}</b><span class="sub">${esc([c.ort,c.handy||c.telefon].filter(Boolean).join(' · '))}</span>
+ <div class="tags">${ns?`<span class="tag strom">⚡ ${ns}</span>`:''}${ng?`<span class="tag gas">🔥 ${ng}</span>`:''}<span class="tag">${esc(c.status)}</span>${badgeDeadline(c)}${needsFollow(c)?'<span class="tag red">📅 takip</span>':''}</div></div></div>`;
+}
+
+/* ---------- detay ---------- */
+const row=(l,v)=>v?`<div class="row"><span>${l}</span><span>${v}</span></div>`:'';
+const cpb=(txt,cls='')=>txt?`<button class="cp ${cls}" data-copy="${esc(txt)}">${esc(txt)}</button>`:'';
+function waNum(n){let d=String(n).replace(/[^\d+]/g,'');if(d.startsWith('+'))return d.slice(1);if(d.startsWith('00'))return d.slice(2);if(d.startsWith('0'))return '49'+d.slice(1);return d;}
+function renderDetail(){
+ const c=getC(S.cur);if(!c){history.replaceState({v:'list'},'');S.view='list';return renderList();}
+ const tel=c.handy||c.telefon;const full=[addr(c)].join('');
+ const meters=c.meters.map(m=>{
+  const last=m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum));
+  const ad=actionDate(m);const dd=ad?dayNum(ad):null;
+  return `<div class="mcard"><h4><span>${m.typ==='Strom'?'⚡ Strom':'🔥 Gas'}</span><button class="btn sm sec" data-act="addReadSheet" data-mid="${m.id}">+ Zählerstand</button></h4>
+  ${row('Zählernummer',cpb(m.zaehlernr,'mono'))}${row('Marktlokations-ID',cpb(m.malo,'mono'))}
+  ${row('Mevcut firma',esc(m.anbieter))}${row('Kundennummer',cpb(m.kundennr,'mono'))}${row('Tarif',esc(m.tarif))}
+  ${row('Yıllık tüketim',m.verbrauch?numDE(m.verbrauch)+' kWh':'')}
+  ${row('Sözleşme',(m.start||m.ende)?fmtDate(m.start)+' → '+fmtDate(m.ende):'')}
+  ${m.frist&&m.ende?row('Fesih için son gün',`<b style="color:${dd<=30?'var(--red)':'inherit'}">${fmtDate(ad)}${dd>=0?' ('+dd+' gün)':' (geçti)'}</b>`):(m.ende?row('Bitişe kalan',dayNum(m.ende)>=0?dayNum(m.ende)+' gün':'bitti'):'')}
+  ${last.length?row('Zählerstand',`<b>${numDE(last[0].stand)}</b> · ${fmtDate(last[0].datum)}`):''}
+  ${last.length>1?`<details><summary class="mut">Önceki okumalar (${last.length-1})</summary>${last.slice(1).map(r=>row(fmtDate(r.datum),numDE(r.stand))).join('')}</details>`:''}
+  ${m.notiz?`<div class="note">${esc(m.notiz)}</div>`:''}</div>`;}).join('');
+ $('#app').innerHTML=`${hdr(nameOf(c),{back:true,right:'<button data-act="edit" aria-label="Düzenle">✏️</button>'})}
+ <main class="pad">
+ <div class="acts">
+  ${tel?`<a href="tel:${esc(tel.replace(/[^\d+]/g,''))}"><b>📞</b>Ara</a><a href="https://wa.me/${waNum(tel)}" target="_blank" rel="noopener"><b>💬</b>WhatsApp</a>`:'<a style="opacity:.4"><b>📞</b>Ara</a><a style="opacity:.4"><b>💬</b>WhatsApp</a>'}
+  ${c.email?`<a href="mailto:${esc(c.email)}"><b>✉️</b>E-Mail</a>`:'<a style="opacity:.4"><b>✉️</b>E-Mail</a>'}
+  ${full?`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(full)}" target="_blank" rel="noopener"><b>📍</b>Harita</a>`:'<a style="opacity:.4"><b>📍</b>Harita</a>'}
+ </div>
+ <div class="card"><div class="row"><span>Durum</span><span><select id="stQuick" style="width:auto;padding:4px 8px">${STATUS.map(s=>`<option ${c.status===s?'selected':''}>${s}</option>`).join('')}</select></span></div>
+  ${c.wiedervorlage?row('📅 Takip tarihi',`<b style="color:${needsFollow(c)?'var(--red)':'inherit'}">${fmtDate(c.wiedervorlage)}</b>`):''}
+  ${row('Vollmacht (yetki)',c.vollmacht?'✅ alındı':'—')}</div>
+ <div class="card"><h3>👤 Kişi</h3>
+  ${row('Ad Soyad',esc([c.anrede,c.vorname,c.nachname].filter(Boolean).join(' ')))}${row('Geburtsdatum',fmtDate(c.geburtsdatum))}
+  ${row('Adres',esc(addr(c)))}${c.liefDiff?row('Lieferadresse',esc(addr(c.lief))):''}${c.rechDiff?row('Rechnungsadresse',esc(addr(c.rech))):''}
+  ${row('IBAN',cpb(ibanFmt(c.iban),'mono'))}${row('Kontoinhaber',esc(c.kontoinhaber))}
+  ${row('Telefon',cpb(c.telefon))}${row('Handy',cpb(c.handy))}${row('E-Mail',cpb(c.email))}</div>
+ <div class="card"><h3>🔌 Sayaçlar</h3>${meters||'<p class="mut">Sayaç eklenmemiş. ✏️ Düzenle ile ekleyin.</p>'}</div>
+ <div class="card"><h3>📝 Görüşme notları</h3><textarea id="newNote" placeholder="Yeni not…"></textarea><button class="btn sm" style="margin-top:8px" data-act="addNote">Not ekle</button>
+  ${c.notes.slice().sort((a,b)=>b.ts-a.ts).map(n=>`<div class="note"><small>${new Date(n.ts).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})} <button class="x" data-act="delNote" data-nid="${n.id}">✕</button></small>${esc(n.text)}</div>`).join('')}</div>
+ <div class="card"><h3>📎 Belgeler / fotoğraflar</h3><div class="row2" style="display:flex;gap:8px"><button class="btn sm sec" data-act="addDoc" data-cam="1">📷 Çek</button><button class="btn sm sec" data-act="addDoc">🖼 Galeri</button></div>
+  <div class="docs">${c.docs.map(d=>`<img data-act="viewDoc" data-did="${d.id}" alt="${esc(d.name)}">`).join('')}</div></div>
+ <div class="card"><button class="btn sec" data-act="summary" style="margin-bottom:8px">📋 Özeti kopyala</button><button class="btn red" data-act="del">🗑 Müşteriyi sil</button></div>
+ </main>`;
+ $('#stQuick').onchange=async e=>{c.status=e.target.value;await saveC(c);toast('Durum güncellendi');};
+ c.docs.forEach(async d=>{const r=await DB.get('images',d.id);const img=$(`img[data-did="${d.id}"]`);if(r&&img){const u=URL.createObjectURL(r.blob);S.urls.push(u);img.src=u;}});
+}
+function summaryText(c){
+ const L=[];L.push(nameOf(c)+(c.geburtsdatum?' (geb. '+fmtDate(c.geburtsdatum)+')':''));
+ if(addr(c))L.push('Adresse: '+addr(c));if(c.liefDiff)L.push('Lieferadresse: '+addr(c.lief));if(c.rechDiff)L.push('Rechnungsadresse: '+addr(c.rech));
+ if(c.telefon)L.push('Tel: '+c.telefon);if(c.handy)L.push('Handy: '+c.handy);if(c.email)L.push('E-Mail: '+c.email);
+ if(c.iban)L.push('IBAN: '+ibanFmt(c.iban)+(c.kontoinhaber?' ('+c.kontoinhaber+')':''));
+ c.meters.forEach(m=>{L.push('');L.push('— '+m.typ+' —');if(m.zaehlernr)L.push('Zählernummer: '+m.zaehlernr);if(m.malo)L.push('Marktlokations-ID: '+m.malo);if(m.anbieter)L.push('Aktueller Anbieter: '+m.anbieter+(m.kundennr?' · Kd-Nr: '+m.kundennr:''));if(m.verbrauch)L.push('Jahresverbrauch: '+numDE(m.verbrauch)+' kWh');if(m.start||m.ende)L.push('Vertrag: '+fmtDate(m.start)+' – '+fmtDate(m.ende));const r=m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum))[0];if(r)L.push('Zählerstand: '+numDE(r.stand)+' ('+fmtDate(r.datum)+')');});
+ return L.join('\n');
+}
+
+/* ---------- form ---------- */
+const F=(label,path,o={})=>`<label class="fld"><span>${label}</span><input data-p="${path}" type="${o.type||'text'}" value="${esc(get(S.draft,path)??'')}" ${o.im?`inputmode="${o.im}"`:''} ${o.ph?`placeholder="${esc(o.ph)}"`:''} autocomplete="off" autocapitalize="${o.cap||'words'}">${o.hint?`<small class="hint" data-hint="${path}"></small>`:''}</label>`;
+const TA=(label,path,ph='')=>`<label class="fld"><span>${label}</span><textarea data-p="${path}" placeholder="${esc(ph)}">${esc(get(S.draft,path)??'')}</textarea></label>`;
+const CK=(label,path)=>`<label class="chk"><input type="checkbox" data-p="${path}" ${get(S.draft,path)?'checked':''}>${label}</label>`;
+const SEL=(label,path,opts)=>`<label class="fld"><span>${label}</span><select data-p="${path}">${opts.map(o=>`<option value="${esc(o)}" ${get(S.draft,path)===o?'selected':''}>${esc(o||'—')}</option>`).join('')}</select></label>`;
+const addrF=(p)=>`<div class="subbox">${F('Straße + Hausnummer',p+'.strasse')}<div class="g3">${F('PLZ',p+'.plz',{im:'numeric'})}${F('Ort',p+'.ort')}</div></div>`;
+
+function meterForm(m,i){
+ const rd=m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum));
+ return `<div class="mcard"><h4><span>${m.typ==='Strom'?'⚡ Strom sayacı':'🔥 Gas sayacı'} #${i+1}</span><button class="x" data-act="rmMeter" data-i="${i}" aria-label="Sayacı sil">🗑</button></h4>
+ ${F('Zählernummer',`meters.${i}.zaehlernr`,{cap:'characters'})}
+ ${F('Marktlokations-ID (11 haneli)',`meters.${i}.malo`,{im:'numeric',hint:1})}
+ <div class="g2">${F('Mevcut firma',`meters.${i}.anbieter`)}${F('Kundennummer',`meters.${i}.kundennr`,{cap:'characters'})}</div>
+ <div class="g2">${F('Tarif adı (ops.)',`meters.${i}.tarif`)}${F('Yıllık tüketim (kWh)',`meters.${i}.verbrauch`,{im:'decimal'})}</div>
+ <div class="g2">${F('Sözleşme başlangıcı',`meters.${i}.start`,{type:'date'})}${F('Sözleşme bitişi',`meters.${i}.ende`,{type:'date'})}</div>
+ ${F('Kündigungsfrist (gün, ops.)',`meters.${i}.frist`,{im:'numeric',ph:'örn. 42'})}
+ <div class="fld"><span>Zählerstand geçmişi</span>${rd.map(r=>`<div class="row"><span>${fmtDate(r.datum)}</span><span>${numDE(r.stand)} <button class="x" data-act="rmRead" data-i="${i}" data-rid="${r.id}">✕</button></span></div>`).join('')}
+  <div class="g2" style="margin-top:6px"><input type="date" id="rd${i}" value="${todayISO()}"><input id="rs${i}" inputmode="decimal" placeholder="Zählerstand"></div>
+  <button class="btn sm sec" style="margin-top:6px" data-act="addRead" data-i="${i}">+ Okuma ekle</button></div>
+ ${TA('Sayaç notu',`meters.${i}.notiz`)}</div>`;
+}
+function renderForm(){
+ const y=scrollY;const d=S.draft;const isNew=!getC(d.id);
+ $('#app').innerHTML=`${hdr(isNew?'Yeni müşteri':'Düzenle',{back:true})}
+ <main class="pad">
+ <button class="btn ocr" data-act="ocr">📷 Belgeden / resimden oku</button>
+ <div class="card"><h3>👤 Kişi</h3>${SEL('Hitap','anrede',['','Herr','Frau','Divers'])}
+  <div class="g2">${F('Vorname','vorname')}${F('Nachname','nachname')}</div>${F('Geburtsdatum','geburtsdatum',{type:'date'})}</div>
+ <div class="card"><h3>🏠 Adres</h3>${F('Straße + Hausnummer','strasse')}<div class="g3">${F('PLZ','plz',{im:'numeric'})}${F('Ort','ort')}</div>
+  ${CK('Lieferadresse farklı','liefDiff')}${d.liefDiff?'<b class="mut">Lieferadresse</b>'+addrF('lief'):''}
+  ${CK('Rechnungsadresse farklı','rechDiff')}${d.rechDiff?'<b class="mut">Rechnungsadresse</b>'+addrF('rech'):''}</div>
+ <div class="card"><h3>🏦 Banka</h3>${F('IBAN','iban',{cap:'characters',hint:1,ph:'DE00 0000 0000 0000 0000 00'})}${F('Kontoinhaber (farklıysa)','kontoinhaber')}</div>
+ <div class="card"><h3>📞 İletişim</h3><div class="g2">${F('Telefon','telefon',{type:'tel',im:'tel'})}${F('Handy','handy',{type:'tel',im:'tel'})}</div>${F('E-Mail','email',{type:'email',cap:'none'})}</div>
+ <div class="card"><h3>🔌 Sayaçlar</h3>${d.meters.map(meterForm).join('')}
+  <div class="g2"><button class="btn sec" data-act="addMeter" data-t="Strom">+ ⚡ Strom</button><button class="btn sec" data-act="addMeter" data-t="Gas">+ 🔥 Gas</button></div></div>
+ <div class="card"><h3>📌 Durum & takip</h3>${SEL('Durum','status',STATUS)}${F('Takip tarihi (Wiedervorlage)','wiedervorlage',{type:'date'})}${CK('Vollmacht (yetki belgesi) alındı','vollmacht')}</div>
+ <div class="card"><h3>📝 Görüşme notu</h3>${TA('Yeni not (kaydedince notlara eklenir)','newNote','Müşteri ne dedi, ne istedi, ne zaman aranacak…')}</div>
+ </main>
+ <div class="bar"><button class="btn sec" data-act="back">Vazgeç</button><button class="btn" data-act="save">💾 Kaydet</button></div>`;
+ $$('[data-hint]').forEach(updateHint);scrollTo(0,y);
+}
+function updateHint(el){
+ const inp=el.tagName==='SMALL'?$(`[data-p="${el.dataset.hint}"]`):el;const sm=el.tagName==='SMALL'?el:$(`[data-hint="${el.dataset.p}"]`);if(!inp||!sm)return;
+ const p=inp.dataset.p,v=inp.value.trim();sm.className='hint';sm.textContent='';if(!v)return;
+ if(p==='iban'){if(ibanValid(v)){sm.className='hint ok';sm.textContent='✓ IBAN geçerli';}else{sm.className='hint bad';sm.textContent='⚠ IBAN geçersiz görünüyor — kontrol edin';}}
+ else if(/malo$/.test(p)){const n=v.replace(/\D/g,'').length;if(n===11){sm.className='hint ok';sm.textContent='✓ 11 hane';}else{sm.className='hint bad';sm.textContent=`⚠ ${n} hane (11 olmalı)`;}}
+}
+document.addEventListener('input',e=>{const t=e.target;if(!t.dataset||!t.dataset.p||!S.draft)return;
+ if(t.type==='checkbox')return;set(S.draft,t.dataset.p,t.value);S.dirty=true;if(t.dataset.p==='iban'||/malo$/.test(t.dataset.p))updateHint(t);});
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.p||!S.draft)return;
+ if(t.type==='checkbox'){set(S.draft,t.dataset.p,t.checked);S.dirty=true;if(/Diff$/.test(t.dataset.p))renderForm();}
+ else{set(S.draft,t.dataset.p,t.value);S.dirty=true;if(t.dataset.p==='iban'){t.value=ibanFmt(t.value);set(S.draft,'iban',t.value);updateHint(t);}}});
+
+async function saveForm(){
+ const d=S.draft;if(!d.vorname.trim()&&!d.nachname.trim()){toast('En az bir isim girin');return;}
+ ['vorname','nachname','email'].forEach(k=>d[k]=d[k].trim());d.iban=ibanClean(d.iban);
+ d.meters.forEach(m=>{m.malo=m.malo.replace(/\s/g,'');});
+ if(d.newNote&&d.newNote.trim())d.notes.push({id:uid(),ts:Date.now(),text:d.newNote.trim()});
+ const imgs=d._imgs||{};const clean=JSON.parse(JSON.stringify(d));delete clean.newNote;delete clean._imgs;
+ for(const id in imgs)await DB.put('images',{id,cid:clean.id,blob:imgs[id].blob,name:imgs[id].name,ts:Date.now()});
+ await saveC(clean);S.dirty=false;S.draft=null;S.view='detail';S.cur=clean.id;history.replaceState({v:'detail',id:clean.id},'');render();scrollTo(0,0);toast('Kaydedildi ✓');
+}
+function openForm(id,ocr){const src=id?getC(id):null;S.draft=src?JSON.parse(JSON.stringify(src)):blankC();S.draft.newNote='';S.draft._imgs={};S.dirty=false;go('form',id||S.draft.id);if(ocr)setTimeout(openOcr,50);}
+
+/* ---------- alt sayfa (sheet) ---------- */
+function openSheet(html){$('#sheet').innerHTML=html;$('#sheetBg').classList.add('on');}
+function closeSheet(){$('#sheetBg').classList.remove('on');$('#sheet').innerHTML='';}
+$('#sheetBg').addEventListener('click',e=>{if(e.target.id==='sheetBg')closeSheet();});
+
+/* ---------- görüntü işleme + OCR ---------- */
+function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i);};i.onerror=()=>rej(new Error('Resim açılamadı'));i.src=u;});}
+function drawScaled(img,max){const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c;}
+const canvasBlob=(c,q)=>new Promise(r=>c.toBlob(r,'image/jpeg',q));
+async function compress(file){const img=await loadImg(file);return canvasBlob(drawScaled(img,1800),0.82);}
+async function prepOcr(file){const img=await loadImg(file);const c=drawScaled(img,2400);const x=c.getContext('2d');const id=x.getImageData(0,0,c.width,c.height),p=id.data;let lo=255,hi=0;
+ for(let i=0;i<p.length;i+=4){const g=.299*p[i]+.587*p[i+1]+.114*p[i+2];p[i]=p[i+1]=p[i+2]=g;if(g<lo)lo=g;if(g>hi)hi=g;}
+ const k=hi>lo?255/(hi-lo):1;for(let i=0;i<p.length;i+=4){const v=Math.max(0,Math.min(255,(p[i]-lo)*k));p[i]=p[i+1]=p[i+2]=v;}x.putImageData(id,0,0);
+ return{canvas:c,blob:await canvasBlob(drawScaled(img,1800),0.82)};}
+function loadTess(){return window.Tesseract?Promise.resolve():new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=res;s.onerror=()=>rej(new Error('OCR motoru yüklenemedi. İnternet bağlantısını kontrol edin.'));document.head.appendChild(s);});}
+function pickFile(cam,cb){const i=document.createElement('input');i.type='file';i.accept='image/*';if(cam)i.capture='environment';i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
+
+/* metin ayrıştırma (Almanca belgeler) */
+const toISO=(d,m,y)=>{y=String(y);if(y.length===2)y='20'+y;return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;};
+const DT='([0-3]?\\d)[.\\/]([01]?\\d)[.\\/]((?:19|20)?\\d{2})';
+const PROVIDERS=['E.ON','Vattenfall','EnBW','RWE','Yello','eprimo','Octopus','Tibber','Lichtblick','Naturstrom','Mainova','badenova','Süwag','Bayernwerk','Westenergie','innogy','EWE','enercity','ENTEGA','Gas.de','Rheinenergie','Stadtwerke \\w+','SWK','Grundversorgung'];
+function parseText(raw){
+ const t=raw.replace(/\r/g,'');const flat=t.replace(/[ \t]+/g,' ');const lines=t.split('\n').map(s=>s.trim()).filter(Boolean);
+ const f={};let m;
+ // IBAN
+ let ib=null,ibLoose=null;for(const x of flat.matchAll(/\b[A-Z]{2}\s?\d{2}(?:\s?[A-Z0-9]{4}){3,7}(?:\s?[A-Z0-9]{1,4})?\b/g)){const c=ibanClean(x[0]);if(ibanValid(c)){ib=c;break;}if(!ibLoose&&c.startsWith('DE'))ibLoose=c;}
+ if(ib)f.iban=ibanFmt(ib);else if(ibLoose)f.iban=ibanFmt(ibLoose);
+ if(m=flat.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/))f.email=m[0];
+ const ph=s=>s.replace(/[^\d+]/g,'');
+ if(m=flat.match(/(?:Mobil|Handy|Cell)[^\d+]{0,12}((?:\+|00)?\d[\d\s\/\-()]{6,18}\d)/i))f.handy=m[1].trim();
+ if(m=flat.match(/(?:Tel(?:efon)?\.?|Fon|Festnetz)[^\d+]{0,12}((?:\+|00)?\d[\d\s\/\-()]{6,18}\d)/i))f.telefon=m[1].trim();
+ if(!f.handy&&!f.telefon&&(m=flat.match(/(?:\+49|0049|\b0)\s?[1-9][\d\s\/\-()]{7,16}\d/))){const v=m[0].trim();if(/^(?:\+49|0049|0)\s?1[567]/.test(v))f.handy=v;else f.telefon=v;}
+ if(m=flat.match(/\b(\d{5})\s+([A-ZÄÖÜ][A-Za-zÄÖÜäöüß\-.]+(?:[ \-][A-ZÄÖÜa-zäöüß.\-]+){0,2})/)){f.plz=m[1];f.ort=m[2].trim();}
+ let si=-1;const sre=/^((?:[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.\- ]{2,40}?(?:straße|strasse|str\.|weg|platz|allee|gasse|ring|damm|ufer|chaussee|steig|pfad|stieg|markt))|(?:Am|An der|An den|Auf dem|Auf der|Zum|Zur|In der|Im|Beim)\s[A-Za-zÄÖÜäöüß.\- ]+?)\s*(\d{1,4}\s?[a-zA-Z]?)$/i;
+ lines.some((l,i)=>{const x=l.match(sre);if(x){f.strasse=(x[1]+' '+x[2]).replace(/\s+/g,' ').trim();si=i;return true;}});
+ if(m=t.match(/(Herr|Frau)\s+(?:Dr\.?\s+|Prof\.?\s+)?([A-ZÄÖÜ][a-zäöüß\-]+)\s+([A-ZÄÖÜ][a-zäöüß\-]+(?:-[A-ZÄÖÜ][a-zäöüß]+)?)/)){f.anrede=m[1];f.vorname=m[2];f.nachname=m[3];}
+ else if(si>0&&(m=lines[si-1].match(/^([A-ZÄÖÜ][A-Za-zäöüß\-]+)\s+([A-ZÄÖÜ][A-Za-zäöüß\-]+)$/))){f.vorname=m[1];f.nachname=m[2];}
+ if(m=flat.match(new RegExp('(?:geboren(?:\\s+am)?|Geburtsdatum|geb\\.?(?:\\s+am)?)[:\\s]*'+DT,'i')))f.geburtsdatum=toISO(m[1],m[2],m[3]);
+ // sayaç
+ const lowAll=flat.toLowerCase();const hasS=/strom|elektr|\bkwh\b/.test(lowAll),hasG=/\bgas\b|erdgas|m³|\bm3\b/.test(lowAll);
+ f._typ=hasG&&!hasS?'Gas':hasS&&!hasG?'Strom':null;
+ if(m=flat.match(/(?:Marktlokation(?:s)?[-\s]?(?:ID|Nr\.?|nummer)?|MaLo[-\s]?(?:ID)?)[^\d]{0,15}(\d{11})\b/i))f.malo=m[1];
+ else{const ibd=ib||ibLoose||'';for(const x of flat.matchAll(/\b\d{11}\b/g)){if(!ibd.includes(x[0])){f.malo=x[0];break;}}}
+ if(m=flat.match(/(?:Z[äa]hler(?:nummer|[-\s]?nr\.?|[-\s]?no\.?))[:\s]*([A-Z0-9][A-Z0-9\-]{4,20})/i))f.zaehlernr=m[1];
+ if(m=flat.match(/(?:Kunden(?:nummer|[-\s]?nr\.?)|Kd\.?[-\s]?Nr\.?|Vertragskonto(?:nummer)?)[:\s]*([A-Z0-9][A-Z0-9\/\-.]{3,20})/i))f.kundennr=m[1];
+ if(m=flat.match(new RegExp('Z[äa]hlerstand[:\\s]*([\\d.]{1,9}(?:,\\d{1,3})?)(?:[^\\d]{0,40}'+DT+')?','i'))){f.stand=m[1];f.standDatum=m[2]?toISO(m[2],m[3],m[4]):todayISO();}
+ if(m=flat.match(/(?:Jahresverbrauch|Jahresarbeit|Verbrauch)[^\d]{0,25}([\d.]{3,9})\s*kWh/i))f.verbrauch=m[1].replace(/\./g,'');
+ if(m=flat.match(new RegExp('(?:Lieferbeginn|Vertragsbeginn|Beginn der Lieferung|Vertrag(?:s)?\\s+ab)[^\\d]{0,20}'+DT,'i')))f.start=toISO(m[1],m[2],m[3]);
+ if(m=flat.match(new RegExp('(?:Vertragsende|Laufzeitende|Lieferende|Ende der Laufzeit|Laufzeit bis|Vertragslaufzeit bis)[^\\d]{0,20}'+DT,'i')))f.ende=toISO(m[1],m[2],m[3]);
+ for(const p of PROVIDERS){const x=flat.match(new RegExp('\\b('+p+')','i'));if(x){f.anbieter=x[1];break;}}
+ return f;
+}
+const LBL={anrede:'Hitap',vorname:'Vorname',nachname:'Nachname',geburtsdatum:'Geburtsdatum',strasse:'Straße + Nr.',plz:'PLZ',ort:'Ort',iban:'IBAN',telefon:'Telefon',handy:'Handy',email:'E-Mail',zaehlernr:'Zählernummer',malo:'Marktlokations-ID',anbieter:'Mevcut firma',kundennr:'Kundennummer',verbrauch:'Yıllık tüketim (kWh)',start:'Sözleşme başlangıcı',ende:'Sözleşme bitişi',stand:'Zählerstand'};
+const CKEYS=['anrede','vorname','nachname','geburtsdatum','strasse','plz','ort','iban','telefon','handy','email'];
+const MKEYS=['zaehlernr','malo','anbieter','kundennr','verbrauch','start','ende','stand'];
+const DATEK=['geburtsdatum','start','ende'];
+
+function openOcr(){
+ openSheet(`<h3>📷 Belgeden / resimden oku</h3><p class="mut">Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)</p>
+ <div class="g2"><button class="btn" id="oCam">📷 Kamera</button><button class="btn sec" id="oGal">🖼 Galeri</button></div><div id="oBody"></div>`);
+ $('#oCam').onclick=()=>pickFile(true,runOcr);$('#oGal').onclick=()=>pickFile(false,runOcr);
+}
+async function runOcr(file){
+ const b=$('#oBody');b.innerHTML='<div class="prog"><div id="pb"></div></div><p id="pm" class="mut">Resim hazırlanıyor…</p>';
+ let prep;try{prep=await prepOcr(file);}catch(e){b.innerHTML=`<p class="hint bad">${esc(e.message)}</p>`;return;}
+ try{
+  $('#pm').textContent='OCR motoru yükleniyor…';await loadTess();
+  const r=await Tesseract.recognize(prep.canvas,'deu',{logger:m=>{if(!$('#pb'))return;if(m.status==='recognizing text'){$('#pb').style.width=Math.round(m.progress*100)+'%';$('#pm').textContent='Okunuyor… %'+Math.round(m.progress*100);}else $('#pm').textContent=m.status+'…';}});
+  showOcrResult(r.data.text||'',prep.blob,file.name||'belge.jpg');
+ }catch(e){
+  b.innerHTML=`<p class="hint bad">⚠ ${esc(e.message||'Okuma başarısız')}</p><button class="btn sec" id="onlyImg">Yalnızca resmi belgelere ekle</button>`;
+  $('#onlyImg').onclick=()=>{attachDraftImg(prep.blob,file.name);closeSheet();toast('Resim eklendi');};
+ }
+}
+function attachDraftImg(blob,name){const id=uid();S.draft._imgs[id]={blob,name:name||'belge.jpg'};S.draft.docs.push({id,name:name||'belge.jpg',ts:Date.now()});S.dirty=true;}
+function showOcrResult(text,blob,name){
+ const f=parseText(text);const d=S.draft;
+ const cKeys=CKEYS.filter(k=>f[k]),mKeys=MKEYS.filter(k=>f[k]);
+ const rows=[...cKeys,...mKeys].map(k=>{const isM=MKEYS.includes(k);const cur=isM?'':d[k];const clash=cur&&cur!==f[k];
+  return `<div class="res"><input type="checkbox" data-k="${k}" ${clash?'':'checked'}><label class="fld" style="margin:0"><span>${LBL[k]}${clash?` · <i>mevcut: ${esc(cur)}</i>`:''}</span><input data-v="${k}" type="${DATEK.includes(k)?'date':'text'}" value="${esc(f[k])}"></label></div>`;}).join('');
+ const types=['Strom','Gas'];const guess=f._typ||'Strom';
+ const opts=d.meters.map((m,i)=>`<option value="m:${m.id}">${m.typ} #${i+1}${m.zaehlernr?' – '+esc(m.zaehlernr):''}</option>`).join('')+types.map(t=>`<option value="n:${t}">+ Yeni ${t} sayacı</option>`).join('');
+ const def=d.meters.find(m=>m.typ===guess)?'m:'+d.meters.find(m=>m.typ===guess).id:'n:'+guess;
+ openSheet(`<h3>Okunan bilgiler</h3>${rows||'<p class="mut">Otomatik tanınan alan bulunamadı. Aşağıdaki ham metinden kopyalayabilirsiniz.</p>'}
+ ${mKeys.length?`<label class="fld"><span>Sayaç bilgileri şuraya yazılsın</span><select id="mTarget">${opts}</select></label>`:''}
+ <label class="chk"><input type="checkbox" id="atImg" checked>Resmi müşterinin belgelerine ekle</label>
+ <details style="margin:8px 0"><summary class="mut">Ham metin</summary><textarea readonly style="min-height:160px">${esc(text)}</textarea></details>
+ <div class="g2"><button class="btn sec" id="oX">İptal</button><button class="btn" id="oApply">Uygula</button></div>`);
+ if(mKeys.length)$('#mTarget').value=def;
+ $('#oX').onclick=closeSheet;
+ $('#oApply').onclick=()=>{
+  let n=0;const val={};$$('#sheet [data-k]').forEach(c=>{if(c.checked)val[c.dataset.k]=$(`[data-v="${c.dataset.k}"]`,$('#sheet')).value.trim();});
+  CKEYS.forEach(k=>{if(val[k]){d[k]=val[k];n++;}});
+  if(MKEYS.some(k=>val[k])){let m;const tv=$('#mTarget').value;if(tv.startsWith('n:')){m=blankM(tv.slice(2));d.meters.push(m);}else m=d.meters.find(x=>x.id===tv.slice(2));
+   ['zaehlernr','malo','anbieter','kundennr','verbrauch','start','ende'].forEach(k=>{if(val[k]){m[k]=val[k];n++;}});
+   if(val.stand){m.readings.push({id:uid(),datum:f.standDatum||todayISO(),stand:val.stand});n++;}}
+  if(document.getElementById('atImg').checked)attachDraftImg(blob,name);
+  S.dirty=true;closeSheet();renderForm();toast(n+' alan uygulandı — kontrol edip Kaydet’e basın');
+ };
+}
+
+/* ---------- ayarlar / yedek / PIN ---------- */
+async function sha(s){if(crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('em-salt:'+s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}return btoa('em-salt:'+s);}
+function openSettings(){
+ const hasPin=!!cfg.get('pin',null);const lb=cfg.get('lastBackup',0);
+ openSheet(`<h3>⚙️ Ayarlar</h3>
+ <p class="mut">${S.customers.length} müşteri · Son yedek: ${lb?new Date(lb).toLocaleString('de-DE'):'yok'}</p>
+ <button class="btn" data-act="expJson" style="margin-bottom:8px">💾 Yedek al (JSON + resimler)</button>
+ <button class="btn sec" data-act="expJsonLite" style="margin-bottom:8px">Yedek al (resimsiz, küçük)</button>
+ <button class="btn sec" data-act="expCsv" style="margin-bottom:8px">📊 Excel için CSV (sayaç başına satır)</button>
+ <button class="btn sec" data-act="impJson" style="margin-bottom:8px">📥 Yedekten geri yükle</button>
+ <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+ <button class="btn sec" data-act="setPin" style="margin-bottom:8px">🔒 ${hasPin?'PIN değiştir':'PIN koy'}</button>
+ ${hasPin?'<button class="btn sec" data-act="rmPin" style="margin-bottom:8px">🔓 PIN’i kaldır</button>':''}
+ <button class="btn red" data-act="wipe" style="margin-top:8px">Tüm verileri sil</button>
+ <p class="mut" style="margin-top:12px">Veriler yalnızca bu cihazın tarayıcısında saklanır; hiçbir sunucuya gönderilmez (OCR için sadece resim işleme motoru internetten indirilir, resim cihazdan çıkmaz). PIN ekran kilidi sağlar, şifreleme değildir. Müşteri verileri için KVKK/DSGVO gereği telefonunuzda ekran kilidi kullanın.</p>
+ <button class="btn sec" data-act="closeSheet" style="margin-top:6px">Kapat</button>`);
+}
+async function exportJson(withImg){
+ const imgs=[];if(withImg){for(const r of await DB.all('images'))imgs.push({id:r.id,cid:r.cid,name:r.name,ts:r.ts,data:await blobToDataURL(r.blob)});}
+ const data={app:'enerji-musteri',v:1,exported:new Date().toISOString(),customers:S.customers,images:imgs};
+ download(`musteri-yedek-${todayISO()}.json`,new Blob([JSON.stringify(data)],{type:'application/json'}));cfg.set('lastBackup',Date.now());toast('Yedek indirildi');
+}
+function exportCsv(){
+ const H=['Anrede','Vorname','Nachname','Geburtsdatum','Straße','PLZ','Ort','Lieferadresse','Rechnungsadresse','Telefon','Handy','E-Mail','IBAN','Kontoinhaber','Status','Wiedervorlage','Vollmacht','Energieart','Zählernummer','Marktlokations-ID','Aktueller Anbieter','Kundennummer','Tarif','Jahresverbrauch kWh','Vertragsbeginn','Vertragsende','Kündigungsfrist Tage','Letzter Zählerstand','Datum Zählerstand','Notizen'];
+ const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[H.map(q).join(';')];
+ S.customers.forEach(c=>{const base=[c.anrede,c.vorname,c.nachname,fmtDate(c.geburtsdatum),c.strasse,c.plz,c.ort,c.liefDiff?addr(c.lief):'',c.rechDiff?addr(c.rech):'',c.telefon,c.handy,c.email,ibanFmt(c.iban),c.kontoinhaber,c.status,fmtDate(c.wiedervorlage),c.vollmacht?'ja':'nein'];
+  const notes=c.notes.map(n=>new Date(n.ts).toLocaleDateString('de-DE')+': '+n.text).join(' | ');
+  const ms=c.meters.length?c.meters:[null];
+  ms.forEach(m=>{const r=m?m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum))[0]:null;
+   rows.push([...base,...(m?[m.typ,m.zaehlernr,m.malo,m.anbieter,m.kundennr,m.tarif,m.verbrauch,fmtDate(m.start),fmtDate(m.ende),m.frist,r?r.stand:'',r?fmtDate(r.datum):'']:Array(12).fill('')),notes].map(q).join(';'));});});
+ download(`musteriler-${todayISO()}.csv`,new Blob(['﻿'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));toast('CSV indirildi');
+}
+function importJson(){pickFileAny('.json,application/json',async f=>{
+ try{const data=JSON.parse(await f.text());if(data.app!=='enerji-musteri')throw new Error('Bu dosya bu uygulamanın yedeği değil');
+  let n=0;for(const c of data.customers){const ex=getC(c.id);if(!ex||(c.updatedAt||0)>=(ex.updatedAt||0)){await DB.put('customers',c);n++;}}
+  for(const im of data.images||[]){await DB.put('images',{id:im.id,cid:im.cid,name:im.name,ts:im.ts,blob:await (await fetch(im.data)).blob()});}
+  S.customers=await DB.all('customers');closeSheet();render();toast(n+' müşteri geri yüklendi');}
+ catch(e){toast('Hata: '+e.message);}});}
+function pickFileAny(acc,cb){const i=document.createElement('input');i.type='file';i.accept=acc;i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
+
+/* ---------- PIN kilidi ---------- */
+function lock(){if(!cfg.get('pin',null))return;$('#pin').value='';$('#pinErr').textContent='';$('#lock').classList.add('on');setTimeout(()=>$('#pin').focus(),50);}
+async function tryPin(){const h=await sha($('#pin').value);if(h===cfg.get('pin',null)){$('#lock').classList.remove('on');}else{$('#pinErr').textContent='Yanlış PIN';$('#pin').value='';}}
+$('#pinOk').onclick=tryPin;$('#pin').addEventListener('keydown',e=>{if(e.key==='Enter')tryPin();});
+let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(cfg.get('pin',null)&&hiddenAt&&Date.now()-hiddenAt>60000)lock();});
+
+/* ---------- tıklama yönlendirme ---------- */
+document.addEventListener('click',async e=>{
+ const cp=e.target.closest('[data-copy]');if(cp){copy(cp.dataset.copy);return;}
+ const t=e.target.closest('[data-act]');if(!t)return;const a=t.dataset.act;const c=getC(S.cur);
+ switch(a){
+  case 'open':go('detail',t.dataset.id);break;
+  case 'new':openForm(null);break;
+  case 'newOcr':openForm(null,true);break;
+  case 'back':history.back();break;
+  case 'edit':openForm(S.cur);break;
+  case 'filter':S.filter=t.dataset.f;renderList();break;
+  case 'settings':openSettings();break;
+  case 'closeSheet':closeSheet();break;
+  case 'ocr':openOcr();break;
+  case 'save':saveForm();break;
+  case 'addMeter':S.draft.meters.push(blankM(t.dataset.t));S.dirty=true;renderForm();break;
+  case 'rmMeter':if(confirm('Bu sayaç silinsin mi?')){S.draft.meters.splice(+t.dataset.i,1);S.dirty=true;renderForm();}break;
+  case 'addRead':{const i=+t.dataset.i,s=$('#rs'+i).value.trim(),dt=$('#rd'+i).value;if(!s||!dt){toast('Tarih ve değer girin');break;}S.draft.meters[i].readings.push({id:uid(),datum:dt,stand:s});S.dirty=true;renderForm();break;}
+  case 'rmRead':{const m=S.draft.meters[+t.dataset.i];m.readings=m.readings.filter(r=>r.id!==t.dataset.rid);S.dirty=true;renderForm();break;}
+  case 'addNote':{const v=$('#newNote').value.trim();if(!v)break;c.notes.push({id:uid(),ts:Date.now(),text:v});await saveC(c);renderDetail();toast('Not eklendi');break;}
+  case 'delNote':if(confirm('Not silinsin mi?')){c.notes=c.notes.filter(n=>n.id!==t.dataset.nid);await saveC(c);renderDetail();}break;
+  case 'addReadSheet':{const mid=t.dataset.mid;openSheet(`<h3>Zählerstand ekle</h3><label class="fld"><span>Tarih</span><input type="date" id="rsD" value="${todayISO()}"></label><label class="fld"><span>Zählerstand</span><input id="rsV" inputmode="decimal" autofocus></label><div class="g2"><button class="btn sec" data-act="closeSheet">İptal</button><button class="btn" id="rsOk">Kaydet</button></div>`);
+   $('#rsOk').onclick=async()=>{const v=$('#rsV').value.trim();if(!v){toast('Değer girin');return;}c.meters.find(m=>m.id===mid).readings.push({id:uid(),datum:$('#rsD').value||todayISO(),stand:v});await saveC(c);closeSheet();renderDetail();toast('Eklendi');};break;}
+  case 'addDoc':pickFile(!!t.dataset.cam,async f=>{try{const blob=await compress(f);const id=uid();await DB.put('images',{id,cid:c.id,blob,name:f.name||'foto.jpg',ts:Date.now()});c.docs.push({id,name:f.name||'foto.jpg',ts:Date.now()});await saveC(c);renderDetail();toast('Eklendi');}catch(err){toast('Hata: '+err.message);}});break;
+  case 'viewDoc':{const r=await DB.get('images',t.dataset.did);if(!r)break;const u=URL.createObjectURL(r.blob);S.urls.push(u);openSheet(`<img src="${u}" style="width:100%;border-radius:10px"><div class="g2" style="margin-top:10px"><button class="btn red" id="dDel">Sil</button><button class="btn sec" data-act="closeSheet">Kapat</button></div>`);
+   $('#dDel').onclick=async()=>{if(!confirm('Resim silinsin mi?'))return;await DB.del('images',r.id);c.docs=c.docs.filter(d=>d.id!==r.id);await saveC(c);closeSheet();renderDetail();};break;}
+  case 'summary':copy(summaryText(c));break;
+  case 'del':if(confirm(nameOf(c)+' silinsin mi? Bu işlem geri alınamaz.')){for(const d of c.docs)await DB.del('images',d.id);await DB.del('customers',c.id);S.customers=S.customers.filter(x=>x.id!==c.id);history.back();toast('Silindi');}break;
+  case 'expJson':exportJson(true);break;
+  case 'expJsonLite':exportJson(false);break;
+  case 'expCsv':exportCsv();break;
+  case 'impJson':importJson();break;
+  case 'setPin':{const p=prompt('Yeni PIN (4–8 rakam):');if(p&&/^\d{4,8}$/.test(p)){cfg.set('pin',await sha(p));toast('PIN ayarlandı');openSettings();}else if(p)toast('PIN 4–8 rakam olmalı');break;}
+  case 'rmPin':if(confirm('PIN kaldırılsın mı?')){localStorage.removeItem('em_pin');toast('PIN kaldırıldı');openSettings();}break;
+  case 'wipe':if(confirm('TÜM müşteri verileri silinecek. Emin misiniz?')&&confirm('Son uyarı: yedeğiniz yoksa geri dönüş yok. Silinsin mi?')){for(const c of S.customers)await DB.del('customers',c.id);for(const r of await DB.all('images'))await DB.del('images',r.id);S.customers=[];closeSheet();S.view='list';render();toast('Silindi');}break;
+ }
+});
+
+/* ---------- başlat ---------- */
+(async()=>{
+ await DB.open();S.customers=await DB.all('customers');
+ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+ history.replaceState({v:'list'},'');render();lock();
+})();
+</script>
+</body>
+</html>
