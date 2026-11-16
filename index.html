@@ -91,11 +91,21 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);border-colo
 <body>
 <div id="app"></div>
 <div id="sheetBg"><div id="sheet"></div></div>
-<div id="lock"><div style="font-size:48px">🔒</div><h2 style="margin:0">Müşteri Defteri</h2><input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"><button class="btn" style="max-width:240px;background:#fff;color:#0f766e" id="pinOk">Aç</button><div id="pinErr"></div></div>
+<div id="lock"><div style="font-size:48px">🔒</div><h2 style="margin:0" id="lockT">Müşteri Defteri</h2><input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"><button class="btn" style="max-width:240px;background:#fff;color:#0f766e" id="pinOk">Aç</button><div id="pinErr"></div></div>
 <div id="toast"></div>
 
 <script>
 'use strict';
+/* ---------- dil / i18n ---------- */
+const LANGS={tr:'Türkçe',de:'Deutsch',en:'English',ru:'Русский'};
+const LOC={tr:'tr-TR',de:'de-DE',en:'en-GB',ru:'ru-RU'};
+let LANG='tr';
+const DICT={"de": {"(geçti)": "(abgelaufen)", "(isimsiz)": "(ohne Namen)", "({n} gün)": "({n} Tage)", "{n} gün": "{n} Tage", "+ Okuma ekle": "+ Ablesung hinzufügen", "+ Yeni {t} sayacı": "+ Neuer {t}-Zähler", "Ad Soyad": "Name", "Adres": "Adresse", "Ara": "Anrufen", "Ayarlar": "Einstellungen", "⚙️ Ayarlar": "⚙️ Einstellungen", "Aç": "Öffnen", "Beklemede": "Wartend", "Belge": "Dokument", "Belgeden yeni müşteri": "Neukunde aus Dokument", "Bitişe kalan": "Verbleibend bis Ende", "Bitti": "Beendet", "Bitiş": "Ende", "Fesih": "Kündigung", "Fesih için son gün": "Letzter Kündigungstag", "Bu dosya bu uygulamanın yedeği değil": "Diese Datei ist keine Sicherung dieser App", "Bu sayaç silinsin mi?": "Diesen Zähler löschen?", "CSV indirildi": "CSV heruntergeladen", "Dil": "Sprache", "Değer girin": "Wert eingeben", "Durum": "Status", "Durum güncellendi": "Status aktualisiert", "Durum: hepsi": "Status: alle", "Düzenle": "Bearbeiten", "Eklendi": "Hinzugefügt", "En az bir isim girin": "Bitte mindestens einen Namen eingeben", "Enerji Müşteri Defteri": "Energie-Kundenbuch", "Müşteri Defteri": "Kundenbuch", "⚡ Müşteri Defteri": "⚡ Kundenbuch", "Geri": "Zurück", "Görüşüldü": "Gesprochen", "Ham metin": "Rohtext", "Harita": "Karte", "Hata:": "Fehler:", "Henüz müşteri yok.<br>Sağ alttaki <b>+</b> ile ekleyin veya 📷 ile belgeden okutun.": "Noch keine Kunden.<br>Mit <b>+</b> unten rechts hinzufügen oder per 📷 aus einem Dokument einlesen.", "Henüz yedek alınmadı.": "Noch keine Sicherung erstellt.", "Hitap": "Anrede", "Kapat": "Schließen", "Kaydedildi ✓": "Gespeichert ✓", "Kaydedilmemiş değişiklikler var. Yine de çıkılsın mı?": "Es gibt ungespeicherte Änderungen. Trotzdem verlassen?", "💾 Kaydet": "💾 Speichern", "Kayıp": "Verloren", "Kontoinhaber (farklıysa)": "Kontoinhaber (falls abweichend)", "Kopyalandı": "Kopiert", "Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)": "Brief, Rechnung, Vertrag oder Zählerfoto. Sie prüfen die erkannten Felder, bevor sie übernommen werden. (Bei der ersten Nutzung wird die OCR-Engine heruntergeladen, Internet erforderlich.)", "Mevcut firma": "Aktueller Anbieter", "Müşteri": "Kunden", "Müşteri ne dedi, ne istedi, ne zaman aranacak…": "Was hat der Kunde gesagt, was möchte er, wann zurückrufen…", "Not ekle": "Notiz hinzufügen", "Not eklendi": "Notiz hinzugefügt", "Not silinsin mi?": "Notiz löschen?", "OCR motoru yüklenemedi. İnternet bağlantısını kontrol edin.": "OCR-Engine konnte nicht geladen werden. Internetverbindung prüfen.", "OCR motoru yükleniyor…": "OCR-Engine wird geladen…", "Kaydet": "Speichern", "Okuma başarısız": "Lesen fehlgeschlagen", "Okunan bilgiler": "Erkannte Angaben", "Okunuyor…": "Wird gelesen…", "PIN 4–8 rakam olmalı": "PIN muss 4–8 Ziffern haben", "PIN ayarlandı": "PIN gesetzt", "PIN kaldırıldı": "PIN entfernt", "PIN kaldırılsın mı?": "PIN entfernen?", "🔒 PIN koy": "🔒 PIN festlegen", "🔒 PIN değiştir": "🔒 PIN ändern", "🔓 PIN’i kaldır": "🔓 PIN entfernen", "Resim açılamadı": "Bild konnte nicht geöffnet werden", "Resim eklendi": "Bild hinzugefügt", "Resim hazırlanıyor…": "Bild wird vorbereitet…", "Resim silinsin mi?": "Bild löschen?", "Resmi müşterinin belgelerine ekle": "Bild zu den Kundendokumenten hinzufügen", "Yalnızca resmi belgelere ekle": "Nur Bild zu Dokumenten hinzufügen", "Sayacı sil": "Zähler löschen", "Sayaç": "Zähler", "Sayaç bilgileri şuraya yazılsın": "Zählerangaben eintragen in", "Sayaç notu": "Zählernotiz", "Silindi": "Gelöscht", "Son uyarı: yedeğiniz yoksa geri dönüş yok. Silinsin mi?": "Letzte Warnung: Ohne Sicherung gibt es kein Zurück. Wirklich löschen?", "Son yedek:": "Letzte Sicherung:", "Sonuç yok.": "Keine Ergebnisse.", "Sözleşme": "Vertrag", "Sözleşme başlangıcı": "Vertragsbeginn", "Sözleşme bitişi": "Vertragsende", "Sözleşme yapıldı": "Vertrag abgeschlossen", "Sıra: A–Z": "Sortierung: A–Z", "Sıra: bitiş yakın": "Sortierung: Ende bald", "Sıra: son işlem": "Sortierung: zuletzt bearbeitet", "Strom sayacı": "Stromzähler", "Gas sayacı": "Gaszähler", "Tarif adı (ops.)": "Tarifname (optional)", "Tarih": "Datum", "Tarih ve değer girin": "Datum und Wert eingeben", "Teklif verildi": "Angebot gemacht", "TÜM müşteri verileri silinecek. Emin misiniz?": "ALLE Kundendaten werden gelöscht. Sind Sie sicher?", "Tüm verileri sil": "Alle Daten löschen", "Tümü": "Alle", "Uygula": "Übernehmen", "Vazgeç": "Abbrechen", "Veriler yalnız bu telefondadır.": "Die Daten liegen nur auf diesem Telefon.", "Veriler yalnızca bu cihazın tarayıcısında saklanır; hiçbir sunucuya gönderilmez (OCR için sadece resim işleme motoru internetten indirilir, resim cihazdan çıkmaz). PIN ekran kilidi sağlar, şifreleme değildir. Müşteri verileri için KVKK/DSGVO gereği telefonunuzda ekran kilidi kullanın.": "Die Daten werden nur im Browser dieses Geräts gespeichert und an keinen Server gesendet (für OCR wird lediglich die Bilderkennungs-Engine aus dem Internet geladen, das Bild verlässt das Gerät nicht). Die PIN ist eine Bildschirmsperre, keine Verschlüsselung. Aktivieren Sie für Kundendaten die Bildschirmsperre Ihres Telefons (DSGVO).", "Vollmacht (yetki belgesi) alındı": "Vollmacht erhalten", "Vollmacht (yetki)": "Vollmacht", "Yanlış PIN": "Falsche PIN", "Yedek al": "Sichern", "Yedek al (resimsiz, küçük)": "Sicherung (ohne Bilder, klein)", "💾 Yedek al (JSON + resimler)": "💾 Sicherung (JSON + Bilder)", "Yedek indirildi": "Sicherung heruntergeladen", "Yeni": "Neu", "Yeni PIN (4–8 rakam):": "Neue PIN (4–8 Ziffern):", "Yeni müşteri": "Neuer Kunde", "Yeni not (kaydedince notlara eklenir)": "Neue Notiz (wird beim Speichern hinzugefügt)", "Yeni not…": "Neue Notiz…", "Yıllık tüketim": "Jahresverbrauch", "Yıllık tüketim (kWh)": "Jahresverbrauch (kWh)", "Zählerstand ekle": "Zählerstand hinzufügen", "Zählerstand geçmişi": "Zählerstandverlauf", "Marktlokations-ID (11 haneli)": "Marktlokations-ID (11-stellig)", "Lieferadresse farklı": "Abweichende Lieferadresse", "Rechnungsadresse farklı": "Abweichende Rechnungsadresse", "Takip tarihi (Wiedervorlage)": "Wiedervorlage", "Kündigungsfrist (gün, ops.)": "Kündigungsfrist (Tage, optional)", "bitti": "beendet", "g": "T", "kamera / galeriden oku": "Kamera / Galerie einlesen", "mevcut:": "aktuell:", "yok": "keine", "{name} silinsin mi? Bu işlem geri alınamaz.": "{name} löschen? Das kann nicht rückgängig gemacht werden.", "{n} alan uygulandı — kontrol edip Kaydet’e basın": "{n} Felder übernommen — prüfen und auf Speichern tippen", "{n} müşteri geri yüklendi": "{n} Kunden wiederhergestellt", "{n} müşteri · Son yedek: {d}": "{n} Kunden · Letzte Sicherung: {d}", "Önceki okumalar ({n})": "Frühere Ablesungen ({n})", "örn. 42": "z. B. 42", "İptal": "Abbrechen", "⏰ 90 gün içinde": "⏰ in 90 Tagen", "⏰ Yaklaşan": "⏰ Bald fällig", "⚠ IBAN geçersiz görünüyor — kontrol edin": "⚠ IBAN scheint ungültig — bitte prüfen", "⚠ {n} hane (11 olmalı)": "⚠ {n} Stellen (11 erforderlich)", "✅ alındı": "✅ erhalten", "✓ 11 hane": "✓ 11 Stellen", "✓ IBAN geçerli": "✓ IBAN gültig", "🏠 Adres": "🏠 Adresse", "🏦 Banka": "🏦 Bank", "👤 Kişi": "👤 Person", "📅 Takip": "📅 Wiedervorlage", "📅 Takip tarihi": "📅 Wiedervorlage", "📅 takip": "📅 Wiedervorlage", "📊 Excel için CSV (sayaç başına satır)": "📊 CSV für Excel (eine Zeile pro Zähler)", "📋 Özeti kopyala": "📋 Zusammenfassung kopieren", "📌 Durum & takip": "📌 Status & Wiedervorlage", "📎 Belgeler / fotoğraflar": "📎 Dokumente / Fotos", "📝 Görüşme notları": "📝 Gesprächsnotizen", "📝 Görüşme notu": "📝 Gesprächsnotiz", "📞 İletişim": "📞 Kontakt", "📥 Yedekten geri yükle": "📥 Aus Sicherung wiederherstellen", "📷 Belgeden / resimden oku": "📷 Aus Dokument / Bild einlesen", "📷 Kamera": "📷 Kamera", "📷 Kamera / galeriden oku (IBAN)": "📷 Per Kamera / Galerie einlesen (IBAN)", "📷 Kamera / galeriden oku (sayaç, Zählerstand, fatura)": "📷 Per Kamera / Galerie einlesen (Zähler, Zählerstand, Rechnung)", "📷 Çek": "📷 Aufnehmen", "🔌 Sayaçlar": "🔌 Zähler", "🔍 İsim, ort, telefon, sayaç no, MaLo, IBAN…": "🔍 Name, Ort, Telefon, Zählernr., MaLo, IBAN…", "🖼 Galeri": "🖼 Galerie", "🗑 Müşteriyi sil": "🗑 Kunden löschen"}, "en": {"(geçti)": "(passed)", "(isimsiz)": "(no name)", "({n} gün)": "({n} days)", "{n} gün": "{n} days", "+ Okuma ekle": "+ Add reading", "+ Yeni {t} sayacı": "+ New {t} meter", "+ Zählerstand": "+ Reading", "Ad Soyad": "Full name", "Adres": "Address", "Ara": "Call", "Ayarlar": "Settings", "⚙️ Ayarlar": "⚙️ Settings", "Aç": "Open", "Beklemede": "On hold", "Belge": "Document", "Belgeden yeni müşteri": "New customer from document", "Bitişe kalan": "Time until end", "Bitti": "Ended", "Bitiş": "End", "Fesih": "Cancel by", "Fesih için son gün": "Last day to cancel", "Bu dosya bu uygulamanın yedeği değil": "This file is not a backup of this app", "Bu sayaç silinsin mi?": "Delete this meter?", "CSV indirildi": "CSV downloaded", "Dil": "Language", "Değer girin": "Enter a value", "Durum": "Status", "Durum güncellendi": "Status updated", "Durum: hepsi": "Status: all", "Düzenle": "Edit", "Eklendi": "Added", "En az bir isim girin": "Enter at least one name", "Enerji Müşteri Defteri": "Energy Customer Book", "Müşteri Defteri": "Customer Book", "⚡ Müşteri Defteri": "⚡ Customer Book", "Geri": "Back", "Görüşüldü": "Contacted", "Ham metin": "Raw text", "Harita": "Map", "Hata:": "Error:", "Henüz müşteri yok.<br>Sağ alttaki <b>+</b> ile ekleyin veya 📷 ile belgeden okutun.": "No customers yet.<br>Add one with <b>+</b> at the bottom right or scan a document with 📷.", "Henüz yedek alınmadı.": "No backup yet.", "Hitap": "Title", "Kapat": "Close", "Kaydedildi ✓": "Saved ✓", "Kaydedilmemiş değişiklikler var. Yine de çıkılsın mı?": "There are unsaved changes. Leave anyway?", "💾 Kaydet": "💾 Save", "Kayıp": "Lost", "Kontoinhaber": "Account holder (Kontoinhaber)", "Kontoinhaber (farklıysa)": "Account holder (if different)", "Kopyalandı": "Copied", "Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)": "Letter, bill, contract or meter photo. You will review the detected fields before applying them. (The OCR engine is downloaded on first use, internet required.)", "Mevcut firma": "Current provider", "Müşteri": "Customers", "Müşteri ne dedi, ne istedi, ne zaman aranacak…": "What the customer said, what they want, when to call back…", "Not ekle": "Add note", "Not eklendi": "Note added", "Not silinsin mi?": "Delete note?", "OCR motoru yüklenemedi. İnternet bağlantısını kontrol edin.": "Could not load the OCR engine. Check your internet connection.", "OCR motoru yükleniyor…": "Loading OCR engine…", "Kaydet": "Save", "Okuma başarısız": "Reading failed", "Okunan bilgiler": "Detected information", "Okunuyor…": "Reading…", "PIN 4–8 rakam olmalı": "PIN must be 4–8 digits", "PIN ayarlandı": "PIN set", "PIN kaldırıldı": "PIN removed", "PIN kaldırılsın mı?": "Remove PIN?", "🔒 PIN koy": "🔒 Set PIN", "🔒 PIN değiştir": "🔒 Change PIN", "🔓 PIN’i kaldır": "🔓 Remove PIN", "PLZ": "Postcode (PLZ)", "Ort": "City (Ort)", "Resim açılamadı": "Could not open the image", "Resim eklendi": "Image added", "Resim hazırlanıyor…": "Preparing image…", "Resim silinsin mi?": "Delete image?", "Resmi müşterinin belgelerine ekle": "Add the image to the customer’s documents", "Yalnızca resmi belgelere ekle": "Only add the image to documents", "Sayacı sil": "Delete meter", "Sayaç": "Meter", "Sayaç bilgileri şuraya yazılsın": "Write meter details to", "Sayaç notu": "Meter note", "Silindi": "Deleted", "Son uyarı: yedeğiniz yoksa geri dönüş yok. Silinsin mi?": "Final warning: without a backup there is no way back. Delete?", "Son yedek:": "Last backup:", "Sonuç yok.": "No results.", "Sözleşme": "Contract", "Sözleşme başlangıcı": "Contract start", "Sözleşme bitişi": "Contract end", "Sözleşme yapıldı": "Contract signed", "Sıra: A–Z": "Sort: A–Z", "Sıra: bitiş yakın": "Sort: ending soon", "Sıra: son işlem": "Sort: last updated", "Strom sayacı": "Electricity meter (Strom)", "Gas sayacı": "Gas meter", "Tarif": "Tariff", "Tarif adı (ops.)": "Tariff name (optional)", "Tarih": "Date", "Tarih ve değer girin": "Enter date and value", "Teklif verildi": "Offer made", "TÜM müşteri verileri silinecek. Emin misiniz?": "ALL customer data will be deleted. Are you sure?", "Tüm verileri sil": "Delete all data", "Tümü": "All", "Uygula": "Apply", "Vazgeç": "Cancel", "Veriler yalnız bu telefondadır.": "Data is stored only on this phone.", "Veriler yalnızca bu cihazın tarayıcısında saklanır; hiçbir sunucuya gönderilmez (OCR için sadece resim işleme motoru internetten indirilir, resim cihazdan çıkmaz). PIN ekran kilidi sağlar, şifreleme değildir. Müşteri verileri için KVKK/DSGVO gereği telefonunuzda ekran kilidi kullanın.": "Data is stored only in this device’s browser and is never sent to any server (for OCR only the image-recognition engine is downloaded; the image never leaves the device). The PIN is a screen lock, not encryption. Use your phone’s screen lock to protect customer data (GDPR).", "Vollmacht (yetki belgesi) alındı": "Power of attorney (Vollmacht) received", "Vollmacht (yetki)": "Power of attorney (Vollmacht)", "Yanlış PIN": "Wrong PIN", "Yedek al": "Back up", "Yedek al (resimsiz, küçük)": "Back up (no images, small)", "💾 Yedek al (JSON + resimler)": "💾 Back up (JSON + images)", "Yedek indirildi": "Backup downloaded", "Yeni": "New", "Yeni PIN (4–8 rakam):": "New PIN (4–8 digits):", "Yeni müşteri": "New customer", "Yeni not (kaydedince notlara eklenir)": "New note (added when you save)", "Yeni not…": "New note…", "Yıllık tüketim": "Annual consumption", "Yıllık tüketim (kWh)": "Annual consumption (kWh)", "Zählerstand ekle": "Add meter reading", "Zählerstand geçmişi": "Meter reading history", "Zählerstand": "Meter reading (Zählerstand)", "Zählernummer": "Meter number (Zählernummer)", "Marktlokations-ID": "Market location ID (Marktlokations-ID)", "Marktlokations-ID (11 haneli)": "Market location ID (11 digits)", "Kundennummer": "Customer number (Kundennummer)", "Geburtsdatum": "Date of birth (Geburtsdatum)", "Lieferadresse": "Delivery address (Lieferadresse)", "Rechnungsadresse": "Billing address (Rechnungsadresse)", "Lieferadresse farklı": "Different delivery address (Lieferadresse)", "Rechnungsadresse farklı": "Different billing address (Rechnungsadresse)", "Vorname": "First name", "Nachname": "Last name", "Straße + Hausnummer": "Street + house number", "Straße + Nr.": "Street + no.", "Handy": "Mobile (Handy)", "Telefon": "Phone", "E-Mail": "E-mail", "Takip tarihi (Wiedervorlage)": "Follow-up date (Wiedervorlage)", "Kündigungsfrist (gün, ops.)": "Notice period (days, optional)", "bitti": "ended", "g": "d", "kamera / galeriden oku": "read from camera / gallery", "mevcut:": "current:", "yok": "none", "{name} silinsin mi? Bu işlem geri alınamaz.": "Delete {name}? This cannot be undone.", "{n} alan uygulandı — kontrol edip Kaydet’e basın": "{n} fields applied — check and tap Save", "{n} müşteri geri yüklendi": "{n} customers restored", "{n} müşteri · Son yedek: {d}": "{n} customers · Last backup: {d}", "Önceki okumalar ({n})": "Earlier readings ({n})", "örn. 42": "e.g. 42", "İptal": "Cancel", "⏰ 90 gün içinde": "⏰ within 90 days", "⏰ Yaklaşan": "⏰ Upcoming", "⚠ IBAN geçersiz görünüyor — kontrol edin": "⚠ IBAN looks invalid — please check", "⚠ {n} hane (11 olmalı)": "⚠ {n} digits (11 required)", "✅ alındı": "✅ received", "✓ 11 hane": "✓ 11 digits", "✓ IBAN geçerli": "✓ IBAN valid", "🏠 Adres": "🏠 Address", "🏦 Banka": "🏦 Bank", "👤 Kişi": "👤 Person", "📅 Takip": "📅 Follow-up", "📅 Takip tarihi": "📅 Follow-up date", "📅 takip": "📅 follow-up", "📊 Excel için CSV (sayaç başına satır)": "📊 CSV for Excel (one row per meter)", "📋 Özeti kopyala": "📋 Copy summary", "📌 Durum & takip": "📌 Status & follow-up", "📎 Belgeler / fotoğraflar": "📎 Documents / photos", "📝 Görüşme notları": "📝 Conversation notes", "📝 Görüşme notu": "📝 Conversation note", "📞 İletişim": "📞 Contact", "📥 Yedekten geri yükle": "📥 Restore from backup", "📷 Belgeden / resimden oku": "📷 Read from document / image", "📷 Kamera": "📷 Camera", "📷 Kamera / galeriden oku (IBAN)": "📷 Read from camera / gallery (IBAN)", "📷 Kamera / galeriden oku (sayaç, Zählerstand, fatura)": "📷 Read from camera / gallery (meter, reading, bill)", "📷 Çek": "📷 Take photo", "🔌 Sayaçlar": "🔌 Meters", "🔍 İsim, ort, telefon, sayaç no, MaLo, IBAN…": "🔍 Name, city, phone, meter no., MaLo, IBAN…", "🖼 Galeri": "🖼 Gallery", "🗑 Müşteriyi sil": "🗑 Delete customer"}, "ru": {"(geçti)": "(прошло)", "(isimsiz)": "(без имени)", "({n} gün)": "({n} дн.)", "{n} gün": "{n} дн.", "+ Okuma ekle": "+ Добавить показание", "+ Yeni {t} sayacı": "+ Новый счётчик {t}", "+ Zählerstand": "+ Показание", "Ad Soyad": "Имя и фамилия", "Adres": "Адрес", "Ara": "Позвонить", "Ayarlar": "Настройки", "⚙️ Ayarlar": "⚙️ Настройки", "Aç": "Открыть", "Beklemede": "В ожидании", "Belge": "Документ", "Belgeden yeni müşteri": "Новый клиент из документа", "Bitişe kalan": "До окончания", "Bitti": "Закончен", "Bitiş": "Окончание", "Fesih": "Расторжение", "Fesih için son gün": "Последний день для расторжения", "Bu dosya bu uygulamanın yedeği değil": "Этот файл не является резервной копией этого приложения", "Bu sayaç silinsin mi?": "Удалить этот счётчик?", "CSV indirildi": "CSV скачан", "Dil": "Язык", "Değer girin": "Введите значение", "Durum": "Статус", "Durum güncellendi": "Статус обновлён", "Durum: hepsi": "Статус: все", "Düzenle": "Изменить", "Eklendi": "Добавлено", "En az bir isim girin": "Введите хотя бы одно имя", "Enerji Müşteri Defteri": "Книга энергоклиентов", "Müşteri Defteri": "Книга клиентов", "⚡ Müşteri Defteri": "⚡ Книга клиентов", "Geri": "Назад", "Görüşüldü": "Был разговор", "Ham metin": "Исходный текст", "Harita": "Карта", "Hata:": "Ошибка:", "Henüz müşteri yok.<br>Sağ alttaki <b>+</b> ile ekleyin veya 📷 ile belgeden okutun.": "Клиентов пока нет.<br>Добавьте через <b>+</b> справа внизу или считайте документ через 📷.", "Henüz yedek alınmadı.": "Резервной копии ещё нет.", "Hitap": "Обращение", "Kapat": "Закрыть", "Kaydedildi ✓": "Сохранено ✓", "Kaydedilmemiş değişiklikler var. Yine de çıkılsın mı?": "Есть несохранённые изменения. Выйти всё равно?", "💾 Kaydet": "💾 Сохранить", "Kayıp": "Потерян", "Kontoinhaber": "Владелец счёта (Kontoinhaber)", "Kontoinhaber (farklıysa)": "Владелец счёта (если другой)", "Kopyalandı": "Скопировано", "Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)": "Письмо, счёт, договор или фото счётчика. Распознанные поля вы проверите перед применением. (При первом использовании загружается OCR-модуль, нужен интернет.)", "Mevcut firma": "Текущий поставщик", "Müşteri": "Клиенты", "Müşteri ne dedi, ne istedi, ne zaman aranacak…": "Что сказал клиент, чего хочет, когда перезвонить…", "Not ekle": "Добавить заметку", "Not eklendi": "Заметка добавлена", "Not silinsin mi?": "Удалить заметку?", "OCR motoru yüklenemedi. İnternet bağlantısını kontrol edin.": "Не удалось загрузить OCR-модуль. Проверьте интернет.", "OCR motoru yükleniyor…": "Загрузка OCR-модуля…", "Kaydet": "Сохранить", "Okuma başarısız": "Не удалось распознать", "Okunan bilgiler": "Распознанные данные", "Okunuyor…": "Распознавание…", "PIN 4–8 rakam olmalı": "PIN должен содержать 4–8 цифр", "PIN ayarlandı": "PIN установлен", "PIN kaldırıldı": "PIN удалён", "PIN kaldırılsın mı?": "Удалить PIN?", "🔒 PIN koy": "🔒 Установить PIN", "🔒 PIN değiştir": "🔒 Сменить PIN", "🔓 PIN’i kaldır": "🔓 Удалить PIN", "PLZ": "Индекс (PLZ)", "Ort": "Город (Ort)", "Resim açılamadı": "Не удалось открыть изображение", "Resim eklendi": "Изображение добавлено", "Resim hazırlanıyor…": "Подготовка изображения…", "Resim silinsin mi?": "Удалить изображение?", "Resmi müşterinin belgelerine ekle": "Добавить изображение в документы клиента", "Yalnızca resmi belgelere ekle": "Только добавить изображение в документы", "Sayacı sil": "Удалить счётчик", "Sayaç": "Счётчик", "Sayaç bilgileri şuraya yazılsın": "Записать данные счётчика в", "Sayaç notu": "Заметка к счётчику", "Silindi": "Удалено", "Son uyarı: yedeğiniz yoksa geri dönüş yok. Silinsin mi?": "Последнее предупреждение: без резервной копии вернуть данные нельзя. Удалить?", "Son yedek:": "Последняя копия:", "Sonuç yok.": "Ничего не найдено.", "Sözleşme": "Договор", "Sözleşme başlangıcı": "Начало договора", "Sözleşme bitişi": "Окончание договора", "Sözleşme yapıldı": "Договор заключён", "Sıra: A–Z": "Сортировка: А–Я", "Sıra: bitiş yakın": "Сортировка: скоро конец", "Sıra: son işlem": "Сортировка: последние изменения", "Strom sayacı": "Счётчик электричества (Strom)", "Gas sayacı": "Счётчик газа", "Tarif": "Тариф", "Tarif adı (ops.)": "Название тарифа (необяз.)", "Tarih": "Дата", "Tarih ve değer girin": "Введите дату и значение", "Teklif verildi": "Предложение сделано", "TÜM müşteri verileri silinecek. Emin misiniz?": "ВСЕ данные клиентов будут удалены. Вы уверены?", "Tüm verileri sil": "Удалить все данные", "Tümü": "Все", "Uygula": "Применить", "Vazgeç": "Отмена", "Veriler yalnız bu telefondadır.": "Данные хранятся только на этом телефоне.", "Veriler yalnızca bu cihazın tarayıcısında saklanır; hiçbir sunucuya gönderilmez (OCR için sadece resim işleme motoru internetten indirilir, resim cihazdan çıkmaz). PIN ekran kilidi sağlar, şifreleme değildir. Müşteri verileri için KVKK/DSGVO gereği telefonunuzda ekran kilidi kullanın.": "Данные хранятся только в браузере этого устройства и не отправляются на сервер (для OCR из интернета загружается только модуль распознавания; изображение не покидает устройство). PIN — это блокировка экрана, а не шифрование. Для защиты данных клиентов используйте блокировку экрана телефона (GDPR).", "Vollmacht (yetki belgesi) alındı": "Доверенность (Vollmacht) получена", "Vollmacht (yetki)": "Доверенность (Vollmacht)", "Yanlış PIN": "Неверный PIN", "Yedek al": "Копия", "Yedek al (resimsiz, küçük)": "Копия (без изображений, малая)", "💾 Yedek al (JSON + resimler)": "💾 Копия (JSON + изображения)", "Yedek indirildi": "Копия скачана", "Yeni": "Новый", "Yeni PIN (4–8 rakam):": "Новый PIN (4–8 цифр):", "Yeni müşteri": "Новый клиент", "Yeni not (kaydedince notlara eklenir)": "Новая заметка (добавится при сохранении)", "Yeni not…": "Новая заметка…", "Yıllık tüketim": "Годовое потребление", "Yıllık tüketim (kWh)": "Годовое потребление (кВт·ч)", "Zählerstand ekle": "Добавить показание", "Zählerstand geçmişi": "История показаний", "Zählerstand": "Показание (Zählerstand)", "Zählernummer": "Номер счётчика (Zählernummer)", "Marktlokations-ID": "ID точки рынка (Marktlokations-ID)", "Marktlokations-ID (11 haneli)": "ID точки рынка (11 цифр)", "Kundennummer": "Номер клиента (Kundennummer)", "Geburtsdatum": "Дата рождения (Geburtsdatum)", "Lieferadresse": "Адрес поставки (Lieferadresse)", "Rechnungsadresse": "Платёжный адрес (Rechnungsadresse)", "Lieferadresse farklı": "Другой адрес поставки (Lieferadresse)", "Rechnungsadresse farklı": "Другой платёжный адрес (Rechnungsadresse)", "Vorname": "Имя", "Nachname": "Фамилия", "Straße + Hausnummer": "Улица + номер дома", "Straße + Nr.": "Улица + №", "Handy": "Мобильный (Handy)", "Telefon": "Телефон", "E-Mail": "E-mail", "Takip tarihi (Wiedervorlage)": "Дата контроля (Wiedervorlage)", "Kündigungsfrist (gün, ops.)": "Срок уведомления (дней, необяз.)", "bitti": "закончено", "g": "д", "kamera / galeriden oku": "чтение с камеры / из галереи", "mevcut:": "сейчас:", "yok": "нет", "{name} silinsin mi? Bu işlem geri alınamaz.": "Удалить {name}? Это нельзя отменить.", "{n} alan uygulandı — kontrol edip Kaydet’e basın": "Применено полей: {n} — проверьте и нажмите «Сохранить»", "{n} müşteri geri yüklendi": "Восстановлено клиентов: {n}", "{n} müşteri · Son yedek: {d}": "Клиентов: {n} · Последняя копия: {d}", "Önceki okumalar ({n})": "Предыдущие показания ({n})", "örn. 42": "напр. 42", "İptal": "Отмена", "⏰ 90 gün içinde": "⏰ в течение 90 дней", "⏰ Yaklaşan": "⏰ Скоро", "⚠ IBAN geçersiz görünüyor — kontrol edin": "⚠ IBAN похож на недействительный — проверьте", "⚠ {n} hane (11 olmalı)": "⚠ цифр: {n} (нужно 11)", "✅ alındı": "✅ получена", "✓ 11 hane": "✓ 11 цифр", "✓ IBAN geçerli": "✓ IBAN действителен", "🏠 Adres": "🏠 Адрес", "🏦 Banka": "🏦 Банк", "👤 Kişi": "👤 Клиент", "📅 Takip": "📅 Контроль", "📅 Takip tarihi": "📅 Дата контроля", "📅 takip": "📅 контроль", "📊 Excel için CSV (sayaç başına satır)": "📊 CSV для Excel (строка на счётчик)", "📋 Özeti kopyala": "📋 Скопировать сводку", "📌 Durum & takip": "📌 Статус и контроль", "📎 Belgeler / fotoğraflar": "📎 Документы / фото", "📝 Görüşme notları": "📝 Заметки о разговорах", "📝 Görüşme notu": "📝 Заметка о разговоре", "📞 İletişim": "📞 Контакты", "📥 Yedekten geri yükle": "📥 Восстановить из копии", "📷 Belgeden / resimden oku": "📷 Считать с документа / изображения", "📷 Kamera": "📷 Камера", "📷 Kamera / galeriden oku (IBAN)": "📷 Считать с камеры / из галереи (IBAN)", "📷 Kamera / galeriden oku (sayaç, Zählerstand, fatura)": "📷 Считать с камеры / из галереи (счётчик, показание, счёт)", "📷 Çek": "📷 Снять", "🔌 Sayaçlar": "🔌 Счётчики", "🔍 İsim, ort, telefon, sayaç no, MaLo, IBAN…": "🔍 Имя, город, телефон, № счётчика, MaLo, IBAN…", "🖼 Galeri": "🖼 Галерея", "🗑 Müşteriyi sil": "🗑 Удалить клиента"}};
+function T(k,v){let s=(LANG!=='tr'&&DICT[LANG]&&DICT[LANG][k])||k;if(v)for(const x in v)s=s.split('{'+x+'}').join(v[x]);return s;}
+function trDom(root){if(LANG==='tr'||!root)return;const D=DICT[LANG]||{};const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const ns=[];while(w.nextNode())ns.push(w.currentNode);
+ ns.forEach(n=>{if(n.parentNode&&n.parentNode.tagName==='TEXTAREA')return;const raw=n.nodeValue;const k=raw.trim();if(k&&D[k])n.nodeValue=raw.replace(k,D[k]);});
+ root.querySelectorAll('[placeholder],[aria-label],[title]').forEach(e=>{for(const a of['placeholder','aria-label','title']){const k=e.getAttribute(a);if(k&&D[k])e.setAttribute(a,D[k]);}});}
+function applyStatic(){document.documentElement.lang=LANG;document.title=T('Enerji Müşteri Defteri');$('#lockT').textContent=T('Müşteri Defteri');$('#pinOk').textContent=T('Aç');}
 /* ---------- yardımcılar ---------- */
 const $=(s,el=document)=>el.querySelector(s);
 const $$=(s,el=document)=>[...el.querySelectorAll(s)];
@@ -107,14 +117,14 @@ const fmtDate=i=>i?i.split('-').reverse().join('.'):'';
 const todayISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const dayNum=iso=>Math.round((new Date(iso+'T00:00:00')-new Date(todayISO()+'T00:00:00'))/864e5);
 const addDays=(iso,n)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const nameOf=c=>[c.vorname,c.nachname].filter(Boolean).join(' ')||'(isimsiz)';
+const nameOf=c=>[c.vorname,c.nachname].filter(Boolean).join(' ')||T('(isimsiz)');
 const addr=o=>[o.strasse,[o.plz,o.ort].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 const ibanClean=s=>String(s||'').replace(/\s+/g,'').toUpperCase();
 const ibanFmt=s=>ibanClean(s).replace(/(.{4})/g,'$1 ').trim();
 function ibanValid(s){const c=ibanClean(s);if(!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(c))return false;if(c.startsWith('DE')&&c.length!==22)return false;const r=c.slice(4)+c.slice(0,4);let m=0;for(const ch of r){if(ch>='0'&&ch<='9')m=(m*10+ +ch)%97;else m=(m*100+ch.charCodeAt(0)-55)%97;}return m===1;}
 const numDE=n=>{const v=parseFloat(String(n).replace(/\./g,'').replace(',','.'));return isNaN(v)?n:v.toLocaleString('de-DE');};
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200);}
-async function copy(t){try{await navigator.clipboard.writeText(t);}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();}toast('Kopyalandı');}
+async function copy(t){try{await navigator.clipboard.writeText(t);}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();}toast(T('Kopyalandı'));}
 function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
 const blobToDataURL=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b);});
 
@@ -146,7 +156,7 @@ async function saveC(c){c.updatedAt=Date.now();await DB.put('customers',JSON.par
 /* ---------- navigasyon ---------- */
 function go(v,id){history.pushState({v,id},'');S.view=v;S.cur=id||null;render();scrollTo(0,0);}
 window.addEventListener('popstate',e=>{
- if(S.view==='form'&&S.dirty&&!confirm('Kaydedilmemiş değişiklikler var. Yine de çıkılsın mı?')){history.pushState({v:'form'},'');return;}
+ if(S.view==='form'&&S.dirty&&!confirm(T('Kaydedilmemiş değişiklikler var. Yine de çıkılsın mı?'))){history.pushState({v:'form'},'');return;}
  S.dirty=false;const st=e.state||{v:'list'};S.view=st.v;S.cur=st.id||null;
  if(S.view==='form'&&!S.draft){S.view='list';}
  closeSheet();render();
@@ -155,11 +165,11 @@ function hdr(title,o={}){return `<header class="top">${o.back?'<button data-act=
 
 /* ---------- ana render ---------- */
 function render(){S.urls.forEach(u=>URL.revokeObjectURL(u));S.urls=[];
- if(S.view==='detail')renderDetail();else if(S.view==='form')renderForm();else renderList();}
+ if(S.view==='detail')renderDetail();else if(S.view==='form')renderForm();else renderList();trDom($('#app'));}
 
 function badgeDeadline(c){const d=deadline(c);if(!d)return '';
- if(d.days<0)return `<span class="tag">⌛ ${d.kind==='Fesih'?'Fesih':'Bitti'} ${fmtDate(d.date)}</span>`;
- return `<span class="tag ${d.days<=30?'red':d.days<=90?'amb':''}">⏰ ${d.kind} ${fmtDate(d.date)} · ${d.days} g</span>`;}
+ if(d.days<0)return `<span class="tag">⌛ ${d.kind==='Fesih'?T('Fesih'):T('Bitti')} ${fmtDate(d.date)}</span>`;
+ return `<span class="tag ${d.days<=30?'red':d.days<=90?'amb':''}">⏰ ${T(d.kind)} ${fmtDate(d.date)} · ${d.days} ${T('g')}</span>`;}
 
 function renderList(){
  let list=S.customers.slice();
@@ -174,9 +184,9 @@ function renderList(){
  const nEnd=S.customers.filter(endingSoon).length,nFol=S.customers.filter(needsFollow).length;
  const lb=cfg.get('lastBackup',0);
  const warn=S.customers.length&&(Date.now()-lb>14*864e5);
- $('#app').innerHTML=`${hdr('⚡ Müşteri Defteri',{right:'<button data-act="settings" aria-label="Ayarlar">⚙️</button>'})}
+ $('#app').innerHTML=`${hdr('⚡ Müşteri Defteri',{right:'<button data-act="lang" aria-label="Dil">🌐</button><button data-act="settings" aria-label="Ayarlar">⚙️</button>'})}
  <main class="pad">
- ${warn?`<div class="banner"><span>💾 ${lb?'Son yedek: '+new Date(lb).toLocaleDateString('de-DE'):'Henüz yedek alınmadı.'} Veriler yalnız bu telefondadır.</span><button class="btn sm" data-act="settings">Yedek al</button></div>`:''}
+ ${warn?`<div class="banner"><span>💾 ${lb?T('Son yedek:')+' '+new Date(lb).toLocaleDateString(LOC[LANG]):T('Henüz yedek alınmadı.')} ${T('Veriler yalnız bu telefondadır.')}</span><button class="btn sm" data-act="settings">Yedek al</button></div>`:''}
  <div class="stats"><div class="stat" data-act="filter" data-f="all"><b>${S.customers.length}</b><span>Müşteri</span></div><div class="stat" data-act="filter" data-f="ending"><b>${nEnd}</b><span>⏰ 90 gün içinde</span></div><div class="stat" data-act="filter" data-f="follow"><b>${nFol}</b><span>📅 Takip</span></div></div>
  <input class="search" id="q" type="search" placeholder="🔍 İsim, ort, telefon, sayaç no, MaLo, IBAN…" value="${esc(S.q)}">
  <div class="chips">
@@ -184,7 +194,7 @@ function renderList(){
   <select id="stSel" style="width:auto;padding:5px 8px;border-radius:20px;font-size:14px"><option value="">Durum: hepsi</option>${STATUS.map(s=>`<option ${S.status===s?'selected':''}>${s}</option>`).join('')}</select>
   <select id="sortSel" style="width:auto;padding:5px 8px;border-radius:20px;font-size:14px"><option value="upd" ${S.sort==='upd'?'selected':''}>Sıra: son işlem</option><option value="name" ${S.sort==='name'?'selected':''}>Sıra: A–Z</option><option value="end" ${S.sort==='end'?'selected':''}>Sıra: bitiş yakın</option></select>
  </div>
- <div id="items">${list.length?list.map(itemHtml).join(''):`<div class="empty">${S.customers.length?'Sonuç yok.':'Henüz müşteri yok.<br>Sağ alttaki <b>+</b> ile ekleyin veya 📷 ile belgeden okutun.'}</div>`}</div>
+ <div id="items">${list.length?list.map(itemHtml).join(''):`<div class="empty">${S.customers.length?T('Sonuç yok.'):T('Henüz müşteri yok.<br>Sağ alttaki <b>+</b> ile ekleyin veya 📷 ile belgeden okutun.')}</div>`}</div>
  </main>
  <div class="fab"><button class="a" data-act="newOcr" aria-label="Belgeden yeni müşteri">📷</button><button class="p" data-act="new" aria-label="Yeni müşteri">+</button></div>`;
  const qi=$('#q');qi.oninput=()=>{S.q=qi.value;const pos=qi.selectionStart;$('#items').innerHTML=''; renderList();const n=$('#q');n.focus();n.setSelectionRange(pos,pos);};
@@ -213,9 +223,9 @@ function renderDetail(){
   ${row('Mevcut firma',esc(m.anbieter))}${row('Kundennummer',cpb(m.kundennr,'mono'))}${row('Tarif',esc(m.tarif))}
   ${row('Yıllık tüketim',m.verbrauch?numDE(m.verbrauch)+' kWh':'')}
   ${row('Sözleşme',(m.start||m.ende)?fmtDate(m.start)+' → '+fmtDate(m.ende):'')}
-  ${m.frist&&m.ende?row('Fesih için son gün',`<b style="color:${dd<=30?'var(--red)':'inherit'}">${fmtDate(ad)}${dd>=0?' ('+dd+' gün)':' (geçti)'}</b>`):(m.ende?row('Bitişe kalan',dayNum(m.ende)>=0?dayNum(m.ende)+' gün':'bitti'):'')}
+  ${m.frist&&m.ende?row('Fesih için son gün',`<b style="color:${dd<=30?'var(--red)':'inherit'}">${fmtDate(ad)}${dd>=0?' '+T('({n} gün)',{n:dd}):' '+T('(geçti)')}</b>`):(m.ende?row('Bitişe kalan',dayNum(m.ende)>=0?T('{n} gün',{n:dayNum(m.ende)}):T('bitti')):'')}
   ${last.length?row('Zählerstand',`<b>${numDE(last[0].stand)}</b> · ${fmtDate(last[0].datum)}`):''}
-  ${last.length>1?`<details><summary class="mut">Önceki okumalar (${last.length-1})</summary>${last.slice(1).map(r=>row(fmtDate(r.datum),numDE(r.stand))).join('')}</details>`:''}
+  ${last.length>1?`<details><summary class="mut">${T('Önceki okumalar ({n})',{n:last.length-1})}</summary>${last.slice(1).map(r=>row(fmtDate(r.datum),numDE(r.stand))).join('')}</details>`:''}
   ${m.notiz?`<div class="note">${esc(m.notiz)}</div>`:''}</div>`;}).join('');
  $('#app').innerHTML=`${hdr(nameOf(c),{back:true,right:'<button data-act="edit" aria-label="Düzenle">✏️</button>'})}
  <main class="pad">
@@ -234,12 +244,12 @@ function renderDetail(){
   ${row('Telefon',cpb(c.telefon))}${row('Handy',cpb(c.handy))}${row('E-Mail',cpb(c.email))}</div>
  <div class="card"><h3>🔌 Sayaçlar</h3>${meters||'<p class="mut">Sayaç eklenmemiş. ✏️ Düzenle ile ekleyin.</p>'}</div>
  <div class="card"><h3>📝 Görüşme notları</h3><textarea id="newNote" placeholder="Yeni not…"></textarea><button class="btn sm" style="margin-top:8px" data-act="addNote">Not ekle</button>
-  ${c.notes.slice().sort((a,b)=>b.ts-a.ts).map(n=>`<div class="note"><small>${new Date(n.ts).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})} <button class="x" data-act="delNote" data-nid="${n.id}">✕</button></small>${esc(n.text)}</div>`).join('')}</div>
+  ${c.notes.slice().sort((a,b)=>b.ts-a.ts).map(n=>`<div class="note"><small>${new Date(n.ts).toLocaleString(LOC[LANG],{dateStyle:'short',timeStyle:'short'})} <button class="x" data-act="delNote" data-nid="${n.id}">✕</button></small>${esc(n.text)}</div>`).join('')}</div>
  <div class="card"><h3>📎 Belgeler / fotoğraflar</h3><div class="row2" style="display:flex;gap:8px"><button class="btn sm sec" data-act="addDoc" data-cam="1">📷 Çek</button><button class="btn sm sec" data-act="addDoc">🖼 Galeri</button></div>
   <div class="docs">${c.docs.map(d=>`<img data-act="viewDoc" data-did="${d.id}" alt="${esc(d.name)}">`).join('')}</div></div>
  <div class="card"><button class="btn sec" data-act="summary" style="margin-bottom:8px">📋 Özeti kopyala</button><button class="btn red" data-act="del">🗑 Müşteriyi sil</button></div>
  </main>`;
- $('#stQuick').onchange=async e=>{c.status=e.target.value;await saveC(c);toast('Durum güncellendi');};
+ $('#stQuick').onchange=async e=>{c.status=e.target.value;await saveC(c);toast(T('Durum güncellendi'));};
  c.docs.forEach(async d=>{const r=await DB.get('images',d.id);const img=$(`img[data-did="${d.id}"]`);if(r&&img){const u=URL.createObjectURL(r.blob);S.urls.push(u);img.src=u;}});
 }
 function summaryText(c){
@@ -260,7 +270,7 @@ const addrF=(p)=>`<div class="subbox">${F('Straße + Hausnummer',p+'.strasse')}<
 
 function meterForm(m,i){
  const rd=m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum));
- return `<div class="mcard"><h4><span>${m.typ==='Strom'?'⚡ Strom sayacı':'🔥 Gas sayacı'} #${i+1}</span><button class="x" data-act="rmMeter" data-i="${i}" aria-label="Sayacı sil">🗑</button></h4>
+ return `<div class="mcard"><h4><span>${m.typ==='Strom'?'⚡ ':'🔥 '}${T(m.typ+' sayacı')} #${i+1}</span><button class="x" data-act="rmMeter" data-i="${i}" aria-label="Sayacı sil">🗑</button></h4>
  <button class="btn sm sec" style="margin-bottom:10px" data-act="ocrMeter" data-i="${i}">📷 Kamera / galeriden oku (sayaç, Zählerstand, fatura)</button>
  ${F('Zählernummer',`meters.${i}.zaehlernr`,{cap:'characters'})}
  ${F('Marktlokations-ID (11 haneli)',`meters.${i}.malo`,{im:'numeric',hint:1})}
@@ -291,13 +301,13 @@ function renderForm(){
  <div class="card"><h3>📝 Görüşme notu</h3>${TA('Yeni not (kaydedince notlara eklenir)','newNote','Müşteri ne dedi, ne istedi, ne zaman aranacak…')}</div>
  </main>
  <div class="bar"><button class="btn sec" data-act="back">Vazgeç</button><button class="btn" data-act="save">💾 Kaydet</button></div>`;
- $$('[data-hint]').forEach(updateHint);scrollTo(0,y);
+ $$('[data-hint]').forEach(updateHint);trDom($('#app'));scrollTo(0,y);
 }
 function updateHint(el){
  const inp=el.tagName==='SMALL'?$(`[data-p="${el.dataset.hint}"]`):el;const sm=el.tagName==='SMALL'?el:$(`[data-hint="${el.dataset.p}"]`);if(!inp||!sm)return;
  const p=inp.dataset.p,v=inp.value.trim();sm.className='hint';sm.textContent='';if(!v)return;
- if(p==='iban'){if(ibanValid(v)){sm.className='hint ok';sm.textContent='✓ IBAN geçerli';}else{sm.className='hint bad';sm.textContent='⚠ IBAN geçersiz görünüyor — kontrol edin';}}
- else if(/malo$/.test(p)){const n=v.replace(/\D/g,'').length;if(n===11){sm.className='hint ok';sm.textContent='✓ 11 hane';}else{sm.className='hint bad';sm.textContent=`⚠ ${n} hane (11 olmalı)`;}}
+ if(p==='iban'){if(ibanValid(v)){sm.className='hint ok';sm.textContent=T('✓ IBAN geçerli');}else{sm.className='hint bad';sm.textContent=T('⚠ IBAN geçersiz görünüyor — kontrol edin');}}
+ else if(/malo$/.test(p)){const n=v.replace(/\D/g,'').length;if(n===11){sm.className='hint ok';sm.textContent=T('✓ 11 hane');}else{sm.className='hint bad';sm.textContent=T('⚠ {n} hane (11 olmalı)',{n});}}
 }
 document.addEventListener('input',e=>{const t=e.target;if(!t.dataset||!t.dataset.p||!S.draft)return;
  if(t.type==='checkbox')return;set(S.draft,t.dataset.p,t.value);S.dirty=true;if(t.dataset.p==='iban'||/malo$/.test(t.dataset.p))updateHint(t);});
@@ -306,23 +316,23 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.datase
  else{set(S.draft,t.dataset.p,t.value);S.dirty=true;if(t.dataset.p==='iban'){t.value=ibanFmt(t.value);set(S.draft,'iban',t.value);updateHint(t);}}});
 
 async function saveForm(){
- const d=S.draft;if(!d.vorname.trim()&&!d.nachname.trim()){toast('En az bir isim girin');return;}
+ const d=S.draft;if(!d.vorname.trim()&&!d.nachname.trim()){toast(T('En az bir isim girin'));return;}
  ['vorname','nachname','email'].forEach(k=>d[k]=d[k].trim());d.iban=ibanClean(d.iban);
  d.meters.forEach(m=>{m.malo=m.malo.replace(/\s/g,'');});
  if(d.newNote&&d.newNote.trim())d.notes.push({id:uid(),ts:Date.now(),text:d.newNote.trim()});
  const imgs=d._imgs||{};const clean=JSON.parse(JSON.stringify(d));delete clean.newNote;delete clean._imgs;
  for(const id in imgs)await DB.put('images',{id,cid:clean.id,blob:imgs[id].blob,name:imgs[id].name,ts:Date.now()});
- await saveC(clean);S.dirty=false;S.draft=null;S.view='detail';S.cur=clean.id;history.replaceState({v:'detail',id:clean.id},'');render();scrollTo(0,0);toast('Kaydedildi ✓');
+ await saveC(clean);S.dirty=false;S.draft=null;S.view='detail';S.cur=clean.id;history.replaceState({v:'detail',id:clean.id},'');render();scrollTo(0,0);toast(T('Kaydedildi ✓'));
 }
 function openForm(id,ocr){const src=id?getC(id):null;S.draft=src?JSON.parse(JSON.stringify(src)):blankC();S.draft.newNote='';S.draft._imgs={};S.dirty=false;go('form',id||S.draft.id);if(ocr)setTimeout(openOcr,50);}
 
 /* ---------- alt sayfa (sheet) ---------- */
-function openSheet(html){$('#sheet').innerHTML=html;$('#sheetBg').classList.add('on');}
+function openSheet(html){$('#sheet').innerHTML=html;trDom($('#sheet'));$('#sheetBg').classList.add('on');}
 function closeSheet(){$('#sheetBg').classList.remove('on');$('#sheet').innerHTML='';}
 $('#sheetBg').addEventListener('click',e=>{if(e.target.id==='sheetBg')closeSheet();});
 
 /* ---------- görüntü işleme + OCR ---------- */
-function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i);};i.onerror=()=>rej(new Error('Resim açılamadı'));i.src=u;});}
+function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i);};i.onerror=()=>rej(new Error(T('Resim açılamadı')));i.src=u;});}
 function drawScaled(img,max){const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c;}
 const canvasBlob=(c,q)=>new Promise(r=>c.toBlob(r,'image/jpeg',q));
 async function compress(file){const img=await loadImg(file);return canvasBlob(drawScaled(img,1800),0.82);}
@@ -330,7 +340,7 @@ async function prepOcr(file){const img=await loadImg(file);const c=drawScaled(im
  for(let i=0;i<p.length;i+=4){const g=.299*p[i]+.587*p[i+1]+.114*p[i+2];p[i]=p[i+1]=p[i+2]=g;if(g<lo)lo=g;if(g>hi)hi=g;}
  const k=hi>lo?255/(hi-lo):1;for(let i=0;i<p.length;i+=4){const v=Math.max(0,Math.min(255,(p[i]-lo)*k));p[i]=p[i+1]=p[i+2]=v;}x.putImageData(id,0,0);
  return{canvas:c,blob:await canvasBlob(drawScaled(img,1800),0.82)};}
-function loadTess(){return window.Tesseract?Promise.resolve():new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=res;s.onerror=()=>rej(new Error('OCR motoru yüklenemedi. İnternet bağlantısını kontrol edin.'));document.head.appendChild(s);});}
+function loadTess(){return window.Tesseract?Promise.resolve():new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=res;s.onerror=()=>rej(new Error(T('OCR motoru yüklenemedi. İnternet bağlantısını kontrol edin.')));document.head.appendChild(s);});}
 function pickFile(cam,cb){const i=document.createElement('input');i.type='file';i.accept='image/*';if(cam)i.capture='environment';i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
 
 /* metin ayrıştırma (Almanca belgeler) */
@@ -375,21 +385,21 @@ const DATEK=['geburtsdatum','start','ende'];
 
 function openOcr(scope){
  S.ocrScope=scope||null;
- const what=!scope?'Belge':scope.only==='iban'?'IBAN':'Sayaç';
- openSheet(`<h3>📷 ${what} — kamera / galeriden oku</h3><p class="mut">Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)</p>
+ const what=!scope?T('Belge'):scope.only==='iban'?'IBAN':T('Sayaç');
+ openSheet(`<h3>📷 ${what} — ${T('kamera / galeriden oku')}</h3><p class="mut">Mektup, fatura, sözleşme veya sayaç fotoğrafı. Okunan alanları uygulamadan önce kontrol edeceksiniz. (İlk kullanımda OCR motoru indirilir, internet gerekir.)</p>
  <div class="g2"><button class="btn" id="oCam">📷 Kamera</button><button class="btn sec" id="oGal">🖼 Galeri</button></div><div id="oBody"></div>`);
  $('#oCam').onclick=()=>pickFile(true,runOcr);$('#oGal').onclick=()=>pickFile(false,runOcr);
 }
 async function runOcr(file){
- const b=$('#oBody');b.innerHTML='<div class="prog"><div id="pb"></div></div><p id="pm" class="mut">Resim hazırlanıyor…</p>';
+ const b=$('#oBody');b.innerHTML='<div class="prog"><div id="pb"></div></div><p id="pm" class="mut">'+T('Resim hazırlanıyor…')+'</p>';
  let prep;try{prep=await prepOcr(file);}catch(e){b.innerHTML=`<p class="hint bad">${esc(e.message)}</p>`;return;}
  try{
-  $('#pm').textContent='OCR motoru yükleniyor…';await loadTess();
-  const r=await Tesseract.recognize(prep.canvas,'deu',{logger:m=>{if(!$('#pb'))return;if(m.status==='recognizing text'){$('#pb').style.width=Math.round(m.progress*100)+'%';$('#pm').textContent='Okunuyor… %'+Math.round(m.progress*100);}else $('#pm').textContent=m.status+'…';}});
+  $('#pm').textContent=T('OCR motoru yükleniyor…');await loadTess();
+  const r=await Tesseract.recognize(prep.canvas,'deu',{logger:m=>{if(!$('#pb'))return;if(m.status==='recognizing text'){$('#pb').style.width=Math.round(m.progress*100)+'%';$('#pm').textContent=T('Okunuyor…')+' %'+Math.round(m.progress*100);}else $('#pm').textContent=T('Okunuyor…');}});
   showOcrResult(r.data.text||'',prep.blob,file.name||'belge.jpg');
  }catch(e){
-  b.innerHTML=`<p class="hint bad">⚠ ${esc(e.message||'Okuma başarısız')}</p><button class="btn sec" id="onlyImg">Yalnızca resmi belgelere ekle</button>`;
-  $('#onlyImg').onclick=()=>{attachDraftImg(prep.blob,file.name);closeSheet();toast('Resim eklendi');};
+  b.innerHTML=`<p class="hint bad">⚠ ${esc(e.message||T('Okuma başarısız'))}</p><button class="btn sec" id="onlyImg">Yalnızca resmi belgelere ekle</button>`;
+  $('#onlyImg').onclick=()=>{attachDraftImg(prep.blob,file.name);closeSheet();toast(T('Resim eklendi'));};
  }
 }
 function attachDraftImg(blob,name){const id=uid();S.draft._imgs[id]={blob,name:name||'belge.jpg'};S.draft.docs.push({id,name:name||'belge.jpg',ts:Date.now()});S.dirty=true;}
@@ -399,9 +409,9 @@ function showOcrResult(text,blob,name){
  const cKeys=(sc&&sc.only==='meter')?[]:CKEYS.filter(k=>f[k]&&(!sc||sc.only!=='iban'||k==='iban'));
  const mKeys=(sc&&sc.only==='iban')?[]:MKEYS.filter(k=>f[k]);
  const rows=[...cKeys,...mKeys].map(k=>{const isM=MKEYS.includes(k);const cur=isM?'':d[k];const clash=cur&&cur!==f[k];
-  return `<div class="res"><input type="checkbox" data-k="${k}" ${clash?'':'checked'}><label class="fld" style="margin:0"><span>${LBL[k]}${clash?` · <i>mevcut: ${esc(cur)}</i>`:''}</span><input data-v="${k}" type="${DATEK.includes(k)?'date':'text'}" value="${esc(f[k])}"></label></div>`;}).join('');
+  return `<div class="res"><input type="checkbox" data-k="${k}" ${clash?'':'checked'}><label class="fld" style="margin:0"><span>${T(LBL[k])}${clash?` · <i>${T('mevcut:')} ${esc(cur)}</i>`:''}</span><input data-v="${k}" type="${DATEK.includes(k)?'date':'text'}" value="${esc(f[k])}"></label></div>`;}).join('');
  const types=['Strom','Gas'];const guess=f._typ||'Strom';
- const opts=d.meters.map((m,i)=>`<option value="m:${m.id}">${m.typ} #${i+1}${m.zaehlernr?' – '+esc(m.zaehlernr):''}</option>`).join('')+types.map(t=>`<option value="n:${t}">+ Yeni ${t} sayacı</option>`).join('');
+ const opts=d.meters.map((m,i)=>`<option value="m:${m.id}">${m.typ} #${i+1}${m.zaehlernr?' – '+esc(m.zaehlernr):''}</option>`).join('')+types.map(t=>`<option value="n:${t}">${T('+ Yeni {t} sayacı',{t})}</option>`).join('');
  const def=d.meters.find(m=>m.typ===guess)?'m:'+d.meters.find(m=>m.typ===guess).id:'n:'+guess;
  openSheet(`<h3>Okunan bilgiler</h3>${rows||'<p class="mut">Otomatik tanınan alan bulunamadı. Aşağıdaki ham metinden kopyalayabilirsiniz.</p>'}
  ${mKeys.length&&!(sc&&sc.meterId)?`<label class="fld"><span>Sayaç bilgileri şuraya yazılsın</span><select id="mTarget">${opts}</select></label>`:''}
@@ -417,7 +427,7 @@ function showOcrResult(text,blob,name){
    ['zaehlernr','malo','anbieter','kundennr','verbrauch','start','ende'].forEach(k=>{if(val[k]){m[k]=val[k];n++;}});
    if(val.stand){m.readings.push({id:uid(),datum:f.standDatum||todayISO(),stand:val.stand});n++;}}
   if(document.getElementById('atImg').checked)attachDraftImg(blob,name);
-  S.dirty=true;closeSheet();renderForm();toast(n+' alan uygulandı — kontrol edip Kaydet’e basın');
+  S.dirty=true;closeSheet();renderForm();toast(T('{n} alan uygulandı — kontrol edip Kaydet’e basın',{n}));
  };
 }
 
@@ -426,13 +436,14 @@ async function sha(s){if(crypto.subtle){const b=await crypto.subtle.digest('SHA-
 function openSettings(){
  const hasPin=!!cfg.get('pin',null);const lb=cfg.get('lastBackup',0);
  openSheet(`<h3>⚙️ Ayarlar</h3>
- <p class="mut">${S.customers.length} müşteri · Son yedek: ${lb?new Date(lb).toLocaleString('de-DE'):'yok'}</p>
+ <p class="mut">${T('{n} müşteri · Son yedek: {d}',{n:S.customers.length,d:lb?new Date(lb).toLocaleString(LOC[LANG]):T('yok')})}</p>
  <button class="btn" data-act="expJson" style="margin-bottom:8px">💾 Yedek al (JSON + resimler)</button>
  <button class="btn sec" data-act="expJsonLite" style="margin-bottom:8px">Yedek al (resimsiz, küçük)</button>
  <button class="btn sec" data-act="expCsv" style="margin-bottom:8px">📊 Excel için CSV (sayaç başına satır)</button>
  <button class="btn sec" data-act="impJson" style="margin-bottom:8px">📥 Yedekten geri yükle</button>
  <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
- <button class="btn sec" data-act="setPin" style="margin-bottom:8px">🔒 ${hasPin?'PIN değiştir':'PIN koy'}</button>
+ <button class="btn sec" data-act="lang" style="margin-bottom:8px">🌐 Dil / Language / Sprache / Язык</button>
+ <button class="btn sec" data-act="setPin" style="margin-bottom:8px">${hasPin?'🔒 PIN değiştir':'🔒 PIN koy'}</button>
  ${hasPin?'<button class="btn sec" data-act="rmPin" style="margin-bottom:8px">🔓 PIN’i kaldır</button>':''}
  <button class="btn red" data-act="wipe" style="margin-top:8px">Tüm verileri sil</button>
  <p class="mut" style="margin-top:12px">Veriler yalnızca bu cihazın tarayıcısında saklanır; hiçbir sunucuya gönderilmez (OCR için sadece resim işleme motoru internetten indirilir, resim cihazdan çıkmaz). PIN ekran kilidi sağlar, şifreleme değildir. Müşteri verileri için KVKK/DSGVO gereği telefonunuzda ekran kilidi kullanın.</p>
@@ -441,7 +452,7 @@ function openSettings(){
 async function exportJson(withImg){
  const imgs=[];if(withImg){for(const r of await DB.all('images'))imgs.push({id:r.id,cid:r.cid,name:r.name,ts:r.ts,data:await blobToDataURL(r.blob)});}
  const data={app:'enerji-musteri',v:1,exported:new Date().toISOString(),customers:S.customers,images:imgs};
- download(`musteri-yedek-${todayISO()}.json`,new Blob([JSON.stringify(data)],{type:'application/json'}));cfg.set('lastBackup',Date.now());toast('Yedek indirildi');
+ download(`musteri-yedek-${todayISO()}.json`,new Blob([JSON.stringify(data)],{type:'application/json'}));cfg.set('lastBackup',Date.now());toast(T('Yedek indirildi'));
 }
 function exportCsv(){
  const H=['Anrede','Vorname','Nachname','Geburtsdatum','Straße','PLZ','Ort','Lieferadresse','Rechnungsadresse','Telefon','Handy','E-Mail','IBAN','Kontoinhaber','Status','Wiedervorlage','Vollmacht','Energieart','Zählernummer','Marktlokations-ID','Aktueller Anbieter','Kundennummer','Tarif','Jahresverbrauch kWh','Vertragsbeginn','Vertragsende','Kündigungsfrist Tage','Letzter Zählerstand','Datum Zählerstand','Notizen'];
@@ -451,19 +462,19 @@ function exportCsv(){
   const ms=c.meters.length?c.meters:[null];
   ms.forEach(m=>{const r=m?m.readings.slice().sort((a,b)=>b.datum.localeCompare(a.datum))[0]:null;
    rows.push([...base,...(m?[m.typ,m.zaehlernr,m.malo,m.anbieter,m.kundennr,m.tarif,m.verbrauch,fmtDate(m.start),fmtDate(m.ende),m.frist,r?r.stand:'',r?fmtDate(r.datum):'']:Array(12).fill('')),notes].map(q).join(';'));});});
- download(`musteriler-${todayISO()}.csv`,new Blob(['﻿'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));toast('CSV indirildi');
+ download(`musteriler-${todayISO()}.csv`,new Blob(['﻿'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));toast(T('CSV indirildi'));
 }
 function importJson(){pickFileAny('.json,application/json',async f=>{
- try{const data=JSON.parse(await f.text());if(data.app!=='enerji-musteri')throw new Error('Bu dosya bu uygulamanın yedeği değil');
+ try{const data=JSON.parse(await f.text());if(data.app!=='enerji-musteri')throw new Error(T('Bu dosya bu uygulamanın yedeği değil'));
   let n=0;for(const c of data.customers){const ex=getC(c.id);if(!ex||(c.updatedAt||0)>=(ex.updatedAt||0)){await DB.put('customers',c);n++;}}
   for(const im of data.images||[]){await DB.put('images',{id:im.id,cid:im.cid,name:im.name,ts:im.ts,blob:await (await fetch(im.data)).blob()});}
-  S.customers=await DB.all('customers');closeSheet();render();toast(n+' müşteri geri yüklendi');}
- catch(e){toast('Hata: '+e.message);}});}
+  S.customers=await DB.all('customers');closeSheet();render();toast(T('{n} müşteri geri yüklendi',{n}));}
+ catch(e){toast(T('Hata:')+' '+e.message);}});}
 function pickFileAny(acc,cb){const i=document.createElement('input');i.type='file';i.accept=acc;i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
 
 /* ---------- PIN kilidi ---------- */
 function lock(){if(!cfg.get('pin',null))return;$('#pin').value='';$('#pinErr').textContent='';$('#lock').classList.add('on');setTimeout(()=>$('#pin').focus(),50);}
-async function tryPin(){const h=await sha($('#pin').value);if(h===cfg.get('pin',null)){$('#lock').classList.remove('on');}else{$('#pinErr').textContent='Yanlış PIN';$('#pin').value='';}}
+async function tryPin(){const h=await sha($('#pin').value);if(h===cfg.get('pin',null)){$('#lock').classList.remove('on');}else{$('#pinErr').textContent=T('Yanlış PIN');$('#pin').value='';}}
 $('#pinOk').onclick=tryPin;$('#pin').addEventListener('keydown',e=>{if(e.key==='Enter')tryPin();});
 let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(cfg.get('pin',null)&&hiddenAt&&Date.now()-hiddenAt>60000)lock();});
 
@@ -479,37 +490,39 @@ document.addEventListener('click',async e=>{
   case 'edit':openForm(S.cur);break;
   case 'filter':S.filter=t.dataset.f;renderList();break;
   case 'settings':openSettings();break;
+  case 'lang':openSheet('<h3>🌐 Dil / Language / Sprache / Язык</h3>'+Object.entries(LANGS).map(([k,v])=>`<button class="btn ${k===LANG?'':'sec'}" style="margin-bottom:8px" data-act="setLang" data-l="${k}">${v}</button>`).join(''));break;
+  case 'setLang':LANG=t.dataset.l;cfg.set('lang',LANG);applyStatic();closeSheet();render();break;
   case 'closeSheet':closeSheet();break;
   case 'ocr':openOcr();break;
   case 'ocrIban':openOcr({only:'iban'});break;
   case 'ocrMeter':openOcr({only:'meter',meterId:S.draft.meters[+t.dataset.i].id});break;
   case 'save':saveForm();break;
   case 'addMeter':S.draft.meters.push(blankM(t.dataset.t));S.dirty=true;renderForm();break;
-  case 'rmMeter':if(confirm('Bu sayaç silinsin mi?')){S.draft.meters.splice(+t.dataset.i,1);S.dirty=true;renderForm();}break;
-  case 'addRead':{const i=+t.dataset.i,s=$('#rs'+i).value.trim(),dt=$('#rd'+i).value;if(!s||!dt){toast('Tarih ve değer girin');break;}S.draft.meters[i].readings.push({id:uid(),datum:dt,stand:s});S.dirty=true;renderForm();break;}
+  case 'rmMeter':if(confirm(T('Bu sayaç silinsin mi?'))){S.draft.meters.splice(+t.dataset.i,1);S.dirty=true;renderForm();}break;
+  case 'addRead':{const i=+t.dataset.i,s=$('#rs'+i).value.trim(),dt=$('#rd'+i).value;if(!s||!dt){toast(T('Tarih ve değer girin'));break;}S.draft.meters[i].readings.push({id:uid(),datum:dt,stand:s});S.dirty=true;renderForm();break;}
   case 'rmRead':{const m=S.draft.meters[+t.dataset.i];m.readings=m.readings.filter(r=>r.id!==t.dataset.rid);S.dirty=true;renderForm();break;}
-  case 'addNote':{const v=$('#newNote').value.trim();if(!v)break;c.notes.push({id:uid(),ts:Date.now(),text:v});await saveC(c);renderDetail();toast('Not eklendi');break;}
-  case 'delNote':if(confirm('Not silinsin mi?')){c.notes=c.notes.filter(n=>n.id!==t.dataset.nid);await saveC(c);renderDetail();}break;
+  case 'addNote':{const v=$('#newNote').value.trim();if(!v)break;c.notes.push({id:uid(),ts:Date.now(),text:v});await saveC(c);renderDetail();toast(T('Not eklendi'));break;}
+  case 'delNote':if(confirm(T('Not silinsin mi?'))){c.notes=c.notes.filter(n=>n.id!==t.dataset.nid);await saveC(c);renderDetail();}break;
   case 'addReadSheet':{const mid=t.dataset.mid;openSheet(`<h3>Zählerstand ekle</h3><label class="fld"><span>Tarih</span><input type="date" id="rsD" value="${todayISO()}"></label><label class="fld"><span>Zählerstand</span><input id="rsV" inputmode="decimal" autofocus></label><div class="g2"><button class="btn sec" data-act="closeSheet">İptal</button><button class="btn" id="rsOk">Kaydet</button></div>`);
-   $('#rsOk').onclick=async()=>{const v=$('#rsV').value.trim();if(!v){toast('Değer girin');return;}c.meters.find(m=>m.id===mid).readings.push({id:uid(),datum:$('#rsD').value||todayISO(),stand:v});await saveC(c);closeSheet();renderDetail();toast('Eklendi');};break;}
-  case 'addDoc':pickFile(!!t.dataset.cam,async f=>{try{const blob=await compress(f);const id=uid();await DB.put('images',{id,cid:c.id,blob,name:f.name||'foto.jpg',ts:Date.now()});c.docs.push({id,name:f.name||'foto.jpg',ts:Date.now()});await saveC(c);renderDetail();toast('Eklendi');}catch(err){toast('Hata: '+err.message);}});break;
+   $('#rsOk').onclick=async()=>{const v=$('#rsV').value.trim();if(!v){toast(T('Değer girin'));return;}c.meters.find(m=>m.id===mid).readings.push({id:uid(),datum:$('#rsD').value||todayISO(),stand:v});await saveC(c);closeSheet();renderDetail();toast(T('Eklendi'));};break;}
+  case 'addDoc':pickFile(!!t.dataset.cam,async f=>{try{const blob=await compress(f);const id=uid();await DB.put('images',{id,cid:c.id,blob,name:f.name||'foto.jpg',ts:Date.now()});c.docs.push({id,name:f.name||'foto.jpg',ts:Date.now()});await saveC(c);renderDetail();toast(T('Eklendi'));}catch(err){toast(T('Hata:')+' '+err.message);}});break;
   case 'viewDoc':{const r=await DB.get('images',t.dataset.did);if(!r)break;const u=URL.createObjectURL(r.blob);S.urls.push(u);openSheet(`<img src="${u}" style="width:100%;border-radius:10px"><div class="g2" style="margin-top:10px"><button class="btn red" id="dDel">Sil</button><button class="btn sec" data-act="closeSheet">Kapat</button></div>`);
-   $('#dDel').onclick=async()=>{if(!confirm('Resim silinsin mi?'))return;await DB.del('images',r.id);c.docs=c.docs.filter(d=>d.id!==r.id);await saveC(c);closeSheet();renderDetail();};break;}
+   $('#dDel').onclick=async()=>{if(!confirm(T('Resim silinsin mi?')))return;await DB.del('images',r.id);c.docs=c.docs.filter(d=>d.id!==r.id);await saveC(c);closeSheet();renderDetail();};break;}
   case 'summary':copy(summaryText(c));break;
-  case 'del':if(confirm(nameOf(c)+' silinsin mi? Bu işlem geri alınamaz.')){for(const d of c.docs)await DB.del('images',d.id);await DB.del('customers',c.id);S.customers=S.customers.filter(x=>x.id!==c.id);history.back();toast('Silindi');}break;
+  case 'del':if(confirm(T('{name} silinsin mi? Bu işlem geri alınamaz.',{name:nameOf(c)}))){for(const d of c.docs)await DB.del('images',d.id);await DB.del('customers',c.id);S.customers=S.customers.filter(x=>x.id!==c.id);history.back();toast(T('Silindi'));}break;
   case 'expJson':exportJson(true);break;
   case 'expJsonLite':exportJson(false);break;
   case 'expCsv':exportCsv();break;
   case 'impJson':importJson();break;
-  case 'setPin':{const p=prompt('Yeni PIN (4–8 rakam):');if(p&&/^\d{4,8}$/.test(p)){cfg.set('pin',await sha(p));toast('PIN ayarlandı');openSettings();}else if(p)toast('PIN 4–8 rakam olmalı');break;}
-  case 'rmPin':if(confirm('PIN kaldırılsın mı?')){localStorage.removeItem('em_pin');toast('PIN kaldırıldı');openSettings();}break;
-  case 'wipe':if(confirm('TÜM müşteri verileri silinecek. Emin misiniz?')&&confirm('Son uyarı: yedeğiniz yoksa geri dönüş yok. Silinsin mi?')){for(const c of S.customers)await DB.del('customers',c.id);for(const r of await DB.all('images'))await DB.del('images',r.id);S.customers=[];closeSheet();S.view='list';render();toast('Silindi');}break;
+  case 'setPin':{const p=prompt(T('Yeni PIN (4–8 rakam):'));if(p&&/^\d{4,8}$/.test(p)){cfg.set('pin',await sha(p));toast(T('PIN ayarlandı'));openSettings();}else if(p)toast(T('PIN 4–8 rakam olmalı'));break;}
+  case 'rmPin':if(confirm(T('PIN kaldırılsın mı?'))){localStorage.removeItem('em_pin');toast(T('PIN kaldırıldı'));openSettings();}break;
+  case 'wipe':if(confirm(T('TÜM müşteri verileri silinecek. Emin misiniz?'))&&confirm(T('Son uyarı: yedeğiniz yoksa geri dönüş yok. Silinsin mi?'))){for(const c of S.customers)await DB.del('customers',c.id);for(const r of await DB.all('images'))await DB.del('images',r.id);S.customers=[];closeSheet();S.view='list';render();toast(T('Silindi'));}break;
  }
 });
 
 /* ---------- başlat ---------- */
 (async()=>{
- await DB.open();S.customers=await DB.all('customers');
+ await DB.open();S.customers=await DB.all('customers');{const l=cfg.get('lang',null);LANG=l&&LANGS[l]?l:'tr';applyStatic();}
  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
  history.replaceState({v:'list'},'');render();lock();
 })();
